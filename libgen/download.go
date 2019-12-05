@@ -1,4 +1,5 @@
 // Copyright © 2019 Antoine Chiny <antoine.chiny@inria.fr>
+// Copyright © 2019 Ryan Ciehanski <ryan@ciehanski.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,7 +33,7 @@ func DownloadBook(book Book) error {
 	var filesize int64
 	filename := getBookFilename(book)
 
-	log.Printf("Download started for %s\n", book.Title)
+	log.Printf("Download started for: %s\n", book.Title)
 
 	err := getDownloadUrl(&book)
 	if err != nil {
@@ -42,40 +43,37 @@ func DownloadBook(book Book) error {
 		return fmt.Errorf("unable to retrieve download link for book")
 	}
 
-	res, err := http.Get(book.Url)
+	r, err := http.Get(book.Url)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err := res.Body.Close(); err != nil {
-			// handle error
-		}
-	}()
 
-	if res.StatusCode == http.StatusOK {
-		filesize = res.ContentLength
+	if r.StatusCode == http.StatusOK {
+		filesize = r.ContentLength
 		bar := pb.Full.Start64(filesize)
 
 		out, err := os.Create(filename)
 		if err != nil {
 			return err
 		}
-		defer func() {
-			if err := out.Close(); err != nil {
-				// handle err
-			}
-		}()
 
-		_, err = io.Copy(out, bar.NewProxyReader(res.Body))
+		_, err = io.Copy(out, bar.NewProxyReader(r.Body))
 		if err != nil {
 			return err
 		}
 
 		bar.Finish()
 
-		log.Printf("[OK] %s\n", filename)
+		if err := out.Close(); err != nil {
+			return err
+		}
+		if err := r.Body.Close(); err != nil {
+			return err
+		}
+
+		log.Printf("[OK] %s", filename)
 	} else {
-		return fmt.Errorf("unable to reach mirror: %v", res.StatusCode)
+		return fmt.Errorf("unable to reach mirror: HTTP %v", r.StatusCode)
 	}
 
 	return nil
@@ -83,35 +81,34 @@ func DownloadBook(book Book) error {
 
 func getDownloadUrl(book *Book) error {
 	var err error
-	BaseUrl := &url.URL{
+	baseUrl := &url.URL{
 		Scheme: "http",
 		Host:   "libgen.lc",
 		Path:   "ads.php",
 	}
 
-	q := BaseUrl.Query()
+	q := baseUrl.Query()
 	q.Set("md5", book.Md5)
-	BaseUrl.RawQuery = q.Encode()
+	baseUrl.RawQuery = q.Encode()
 
-	res, err := http.Get(BaseUrl.String())
+	r, err := http.Get(baseUrl.String())
 	if err != nil {
-		log.Printf("http.Get(%q) error: %v", BaseUrl, err)
+		log.Printf("http.Get(%q) error: %v", baseUrl, err)
 		return err
 	}
-	defer func() {
-		if err := res.Body.Close(); err != nil {
-			// handle error
-		}
-	}()
 
-	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("unable to connect to mirror: %v", res.StatusCode)
+	if r.StatusCode != http.StatusOK {
+		return fmt.Errorf("unable to connect to mirror: %v", r.StatusCode)
 	} else {
-		b, err := ioutil.ReadAll(res.Body)
+		b, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			return err
 		}
 		book.Url = getHref(string(b))
+	}
+
+	if err := r.Body.Close(); err != nil {
+		return err
 	}
 
 	return nil

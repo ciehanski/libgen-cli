@@ -1,4 +1,5 @@
 // Copyright © 2019 Antoine Chiny <antoine.chiny@inria.fr>
+// Copyright © 2019 Ryan Ciehanski <ryan@ciehanski.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,45 +30,52 @@ import (
 	json "github.com/json-iterator/go"
 )
 
-func Search(pattern string, bookNumber int) ([]string, error) {
-	BaseUrl := &url.URL{
+// Search sends a query the search.php page hosted by gen.lib.rus.ec and
+// then provides the web page's contents provided from the resulting http request
+// to the parseHashes() function to extract the specific hashes of matches
+// found from the search query provided.
+func Search(query string, results int) ([]string, error) {
+	// Define URL with required query parameters
+	baseUrl := &url.URL{
 		Scheme: "http",
 		Host:   "gen.lib.rus.ec",
 		Path:   "search.php",
 	}
-
-	q := BaseUrl.Query()
-	q.Set("req", pattern)
+	q := baseUrl.Query()
+	q.Set("req", query)
 	q.Set("lg_topic", "libgen")
 	q.Set("open", "0")
 	q.Set("view", "simple")
-	q.Set("res", string(bookNumber))
+	q.Set("res", string(results))
 	q.Set("phrase", "1")
 	q.Set("column", "def")
-	BaseUrl.RawQuery = q.Encode()
+	baseUrl.RawQuery = q.Encode()
 
-	res, err := http.Get(BaseUrl.String())
+	// Execute GET request on search query
+	r, err := http.Get(baseUrl.String())
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if err := res.Body.Close(); err != nil {
-			// handle error
-		}
-	}()
-
-	if res.StatusCode != http.StatusOK {
+	if r.StatusCode != http.StatusOK {
 		return nil, err
 	}
 
-	b, err := ioutil.ReadAll(res.Body)
+	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		return nil, err
+	}
+
+	// Close request and handle possible error.
+	if err := r.Body.Close(); err != nil {
 		return nil, err
 	}
 
 	return parseHashes(string(b)), nil
 }
 
+// GetDetails retrieves more details about a specific piece of media
+// based off of its unique hash/id. That information is then requested
+// in JSON format and sanitized in an array of Books.
 func GetDetails(hashes []string) ([]Book, error) {
 	var books []Book
 	var formatAuthor string
@@ -178,10 +186,10 @@ func pFormat(key string, value string, attr color.Attribute, align string) {
 }
 
 func formatTitle(title string) string {
-	var cache []string
+	var fTitle []string
 	var counter int
 
-	if len(title) < 60 {
+	if len(title) < TitleMaxLength {
 		return title
 	}
 
@@ -189,12 +197,12 @@ func formatTitle(title string) string {
 	for _, t := range strings.Split(title, " ") {
 		counter += len(t)
 
-		if counter > 60 {
+		if counter > TitleMaxLength {
 			counter = 0
 			t = t + "\n"
 		}
-		cache = append(cache, t)
+		fTitle = append(fTitle, t)
 	}
 
-	return strings.Join(cache, " ")
+	return strings.Join(fTitle, " ")
 }

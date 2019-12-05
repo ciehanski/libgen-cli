@@ -1,4 +1,3 @@
-// Copyright © 2019 Antoine Chiny <antoine.chiny@inria.fr>
 // Copyright © 2019 Ryan Ciehanski <ryan@ciehanski.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,22 +15,35 @@
 package libgen_cli
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "libgen-cli",
-	Short: "A command line interface to access Library Genesis' library.",
-	Long: `libgen-cli queries Library Genesis, lists all results of a specific query 
-	and makes them available for download. Simple and easy.`,
+// statusCmd represents the status command
+var statusCmd = &cobra.Command{
+	Use:   "status",
+	Short: "Checks status of Library Genesis' mirrors.",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		checkMirror("http://libgen.lc")
+		checkMirror("http://gen.lib.rus.ec")
+		checkMirror("https://93.174.95.29")
+		checkMirror("http://booksdl.org")
+		checkMirror("https://b-ok.cc")
+	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() error {
-	if err := rootCmd.Execute(); err != nil {
-		return err
+func checkMirror(url string) {
+	r, err := http.Get(url)
+	if err != nil || r.StatusCode != http.StatusOK {
+		log.Printf("[FAIL] %s\n", url)
+	} else {
+		log.Printf("[OK] %s\n", url)
 	}
-	return nil
+}
+
+func init() {
+	rootCmd.AddCommand(statusCmd)
 }

@@ -1,4 +1,5 @@
 // Copyright © 2019 Antoine Chiny <antoine.chiny@inria.fr>
+// Copyright © 2019 Ryan Ciehanski <ryan@ciehanski.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,10 +35,10 @@ var searchCmd = &cobra.Command{
 	formatted title + link`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var (
-			books        []libgen.Book
-			booksTitle   []string
-			subtitle     string
-			selectedBook libgen.Book
+			books         []libgen.Book
+			bookSelection []string
+			pBookFormat   string
+			selectedBook  libgen.Book
 		)
 
 		if len(args) < 1 {
@@ -67,17 +68,17 @@ var searchCmd = &cobra.Command{
 			selectChoice := fmt.Sprintf("%8s ", b.Id)
 			selectChoice += fmt.Sprintf("%-4s ", b.Extension)
 			if len(b.Title) > libgen.TitleMaxLength {
-				subtitle = b.Title[:libgen.TitleMaxLength]
+				pBookFormat = b.Title[:libgen.TitleMaxLength]
 			} else {
-				subtitle = b.Title
+				pBookFormat = b.Title
 			}
-			selectChoice += fmt.Sprintf("%s", subtitle)
-			booksTitle = append(booksTitle, selectChoice)
+			selectChoice += fmt.Sprintf("%s", pBookFormat)
+			bookSelection = append(bookSelection, selectChoice)
 		}
 
 		prompt := promptui.Select{
-			Label: "Select Book",
-			Items: booksTitle,
+			Label: "Select Book: ",
+			Items: bookSelection,
 		}
 
 		_, result, err := prompt.Run()
@@ -85,7 +86,7 @@ var searchCmd = &cobra.Command{
 			log.Fatalf("error selecting book: %v\n", err)
 		}
 
-		for i, b := range booksTitle {
+		for i, b := range bookSelection {
 			if b == result {
 				selectedBook = books[i]
 				break
