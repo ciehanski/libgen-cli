@@ -1,3 +1,4 @@
+// Copyright © 2019 Antoine Chiny <antoine.chiny@inria.fr>
 // Copyright © 2019 Ryan Ciehanski <ryan@ciehanski.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,11 +31,4 @@ type Book struct {
 	Md5       string
 	Year      string
 	Url       string
-}
-
-type BookFile struct {
-	size int64
-	name string
-	path string
-	data []byte
 }
