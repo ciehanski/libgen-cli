@@ -9,14 +9,19 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go
+      id: install-go
       uses: actions/setup-go@v1
       with:
         go-version: ${{ matrix.go-version }}
     - name: Checkout Code
+      id: checkout-code
       uses: actions/checkout@v1
     - name: Install Dependencies
+      id: install-deps
       run: go mod download
     - name: Test
+      id: test
       run: go test ./...
     - name: Build
+      id: build
       run: go build main.go
