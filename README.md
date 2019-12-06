@@ -6,7 +6,7 @@ any of its contents.
 
 ![Example](https://github.com/ciehanski/libgen-cli/blob/master/resources/libgen-cli-example.gif)
 
-### Installation
+## Installation
 
 You can download the latest binary from the releases section of this repo
 which can be found [here](https://github.com/ciehanski/libgen-cli/releases).
@@ -19,7 +19,7 @@ go get -u github.com/ciehanski/libgen-cli
 go install github.com/ciehanski/libgen-cli
 ```
 
-### Commands
+## Commands
 
 #### Search:
 
