@@ -55,6 +55,7 @@ func Search(query string, results int) ([]string, error) {
 
 	// Execute GET request on search query
 	r, err := http.Get(searchMirror.String())
+
 	if err != nil {
 		return nil, err
 	}
