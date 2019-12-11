@@ -27,13 +27,14 @@ import (
 	"strings"
 
 	"github.com/cheggaaa/pb/v3"
+	"github.com/fatih/color"
 )
 
 func DownloadBook(book Book) error {
 	var filesize int64
 	filename := getBookFilename(book)
 
-	log.Printf("Download started for: %s\n", book.Title)
+	log.Printf("Download started for: %s by %s\n", book.Title, book.Author)
 
 	err := getDownloadUrl(&book)
 	if err != nil {
@@ -71,7 +72,7 @@ func DownloadBook(book Book) error {
 			return err
 		}
 
-		log.Printf("[OK] %s", filename)
+		log.Printf("%s %s", color.GreenString("[OK]"), filename)
 	} else {
 		return fmt.Errorf("unable to reach mirror: HTTP %v", r.StatusCode)
 	}

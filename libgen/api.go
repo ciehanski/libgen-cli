@@ -16,6 +16,7 @@
 package libgen
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -35,13 +36,14 @@ import (
 // to the parseHashes() function to extract the specific hashes of matches
 // found from the search query provided.
 func Search(query string, results int) ([]string, error) {
-	// Define URL with required query parameters
-	baseUrl := &url.URL{
-		Scheme: "http",
-		Host:   "gen.lib.rus.ec",
-		Path:   "search.php",
+	searchMirror := getWorkingMirror(SearchMirrors)
+	if searchMirror.Host == "" {
+		log.Fatal("error: unable to reach any Library Genesis resources. Please try again later.")
 	}
-	q := baseUrl.Query()
+
+	// Define URL with required query parameters
+	searchMirror.Path = "search.php"
+	q := searchMirror.Query()
 	q.Set("req", query)
 	q.Set("lg_topic", "libgen")
 	q.Set("open", "0")
@@ -49,10 +51,10 @@ func Search(query string, results int) ([]string, error) {
 	q.Set("res", string(results))
 	q.Set("phrase", "1")
 	q.Set("column", "def")
-	baseUrl.RawQuery = q.Encode()
+	searchMirror.RawQuery = q.Encode()
 
 	// Execute GET request on search query
-	r, err := http.Get(baseUrl.String())
+	r, err := http.Get(searchMirror.String())
 	if err != nil {
 		return nil, err
 	}
@@ -77,15 +79,27 @@ func Search(query string, results int) ([]string, error) {
 // based off of its unique hash/id. That information is then requested
 // in JSON format and sanitized in an array of Books.
 func GetDetails(hashes []string) ([]Book, error) {
-	var books []Book
-	var formatAuthor string
-	var fsize string
+	var (
+		books        []Book
+		formatAuthor string
+		fsize        string
+	)
 
 	for _, hash := range hashes {
-		apiUrl := fmt.Sprintf("http://gen.lib.rus.ec/json.php?ids=%s&fields=id,title,author,"+
-			"filesize,extension,md5,year", hash)
+		searchMirror := getWorkingMirror(SearchMirrors)
+		if searchMirror.Host == "" {
+			err := "unable to reach any Library Genesis resources. Please try again later."
+			log.Printf(err)
+			return nil, errors.New(err)
+		}
 
-		r, err := http.Get(apiUrl)
+		searchMirror.Path = "json.php"
+		q := searchMirror.Query()
+		q.Set("ids", hash)
+		q.Set("fields", JsonQuery)
+		searchMirror.RawQuery = q.Encode()
+
+		r, err := http.Get(searchMirror.String())
 		if err != nil {
 			log.Printf("error reaching API: %v", err)
 			return nil, err
@@ -100,18 +114,18 @@ func GetDetails(hashes []string) ([]Book, error) {
 		book := parseResponse(b)
 		size, err := strconv.Atoi(book.Filesize)
 		if err != nil {
-			fsize = "NA"
+			fsize = "N/A"
 		} else {
 			fsize = humanize.Bytes(uint64(size))
 		}
 
 		fmt.Println(strings.Repeat("-", 80))
-		fTitle := fmt.Sprintf("%5s %s", book.Id, book.Title)
+		fTitle := fmt.Sprintf("%5s %s", color.New(color.FgHiBlue).Sprintf(book.Id), book.Title)
 		fTitle = formatTitle(fTitle)
 		fmt.Printf("%s\n    ++ ", fTitle)
 
-		if len(book.Author) > 25 {
-			formatAuthor = book.Author[:25]
+		if len(book.Author) > AuthorMaxLength {
+			formatAuthor = book.Author[:AuthorMaxLength]
 		} else {
 			formatAuthor = book.Author
 		}
@@ -132,6 +146,26 @@ func GetDetails(hashes []string) ([]Book, error) {
 	return books, nil
 }
 
+func CheckMirror(url url.URL) int {
+	r, err := http.Get(url.String())
+	if err != nil || r.StatusCode != http.StatusOK {
+		return http.StatusBadGateway
+	} else {
+		return http.StatusOK
+	}
+}
+
+func getWorkingMirror(urls []url.URL) url.URL {
+	var searchMirror url.URL
+	for _, mirrorUrl := range urls {
+		if CheckMirror(mirrorUrl) == http.StatusOK {
+			searchMirror = mirrorUrl
+			break
+		}
+	}
+	return searchMirror
+}
+
 func parseHashes(response string) []string {
 	var hashes []string
 	re := regexp.MustCompile(SearchHref)
@@ -148,12 +182,13 @@ func parseHashes(response string) []string {
 	return hashes
 }
 
+// TODO: add error handling
 func parseResponse(data []byte) Book {
 	var book Book
-	var cache []map[string]string
+	var formatedResp []map[string]string
 
-	if err := json.Unmarshal(data, &cache); err == nil {
-		for _, item := range cache {
+	if err := json.Unmarshal(data, &formatedResp); err == nil {
+		for _, item := range formatedResp {
 			for k, v := range item {
 				switch k {
 				case "id":
@@ -178,8 +213,8 @@ func parseResponse(data []byte) Book {
 	return book
 }
 
-func pFormat(key string, value string, attr color.Attribute, align string) {
-	c := color.New(attr).SprintFunc()
+func pFormat(key string, value string, col color.Attribute, align string) {
+	c := color.New(col).SprintFunc()
 	a := fmt.Sprintf("%%%ss ", align)
 	s := fmt.Sprintf("@%s "+a, c(key), value)
 	fmt.Printf(a, s)

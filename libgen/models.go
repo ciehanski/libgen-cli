@@ -15,12 +15,54 @@
 
 package libgen
 
+import "net/url"
+
 const (
-	SearchHref     = "<a href='book/index.php.+</a>"
-	SearchMD5      = "[A-Z0-9]{32}"
-	searchUrl      = "http://booksdl.org/get\\.php\\?md5=\\w{32}\\&key=\\w{16}"
-	TitleMaxLength = 60
+	SearchHref      = "<a href='book/index.php.+</a>"
+	SearchMD5       = "[A-Z0-9]{32}"
+	searchUrl       = "http://booksdl.org/get\\.php\\?md5=\\w{32}\\&key=\\w{16}"
+	JsonQuery       = "id,title,author,filesize,extension,md5,year"
+	TitleMaxLength  = 65
+	AuthorMaxLength = 25
 )
+
+var SearchMirrors = []url.URL{
+	{
+		Scheme: "http",
+		Host:   "gen.lib.rus.ec",
+	},
+	{
+		Scheme: "http",
+		Host:   "libgen.lc",
+	},
+	{
+		Scheme: "http",
+		Host:   "libgen.li",
+	},
+	{
+		Scheme: "http",
+		Host:   "185.39.10.101",
+	},
+}
+
+var DownloadMirrors = []url.URL{
+	SearchMirrors[0],
+	SearchMirrors[1],
+	SearchMirrors[2],
+	SearchMirrors[3],
+	{
+		Scheme: "https",
+		Host:   "93.174.95.29",
+	},
+	{
+		Scheme: "http",
+		Host:   "booksdl.org",
+	},
+	{
+		Scheme: "https",
+		Host:   "b-ok.cc",
+	},
+}
 
 type Book struct {
 	Id        string

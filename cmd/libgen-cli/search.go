@@ -17,6 +17,7 @@ package libgen_cli
 
 import (
 	"fmt"
+	"github.com/fatih/color"
 	"log"
 	"strings"
 
@@ -25,6 +26,8 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
+
+var resultsFlag int
 
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
@@ -42,19 +45,13 @@ var searchCmd = &cobra.Command{
 		)
 
 		if len(args) < 1 {
-			log.Fatal("Error: Search needs a pattern for the command")
-		}
-
-		// Parse additional flags
-		queryResults, err := rootCmd.Flags().GetInt("results")
-		if err != nil {
-			log.Fatalf("error parsing additional flags: %v", err)
+			cmd.Help()
 		}
 
 		searchQuery := strings.Join(args, " ")
-		log.Printf("++ Searching: %s\n", searchQuery)
+		log.Printf("++ Searching for: %s\n", searchQuery)
 
-		hashes, err := libgen.Search(searchQuery, queryResults)
+		hashes, err := libgen.Search(searchQuery, resultsFlag)
 		if err != nil {
 			log.Fatalf("error completing search query: %v", err)
 		}
@@ -65,8 +62,8 @@ var searchCmd = &cobra.Command{
 		}
 
 		for _, b := range books {
-			selectChoice := fmt.Sprintf("%8s ", b.Id)
-			selectChoice += fmt.Sprintf("%-4s ", b.Extension)
+			selectChoice := fmt.Sprintf("%8s ", color.New(color.FgHiBlue).Sprintf(b.Id))
+			selectChoice += fmt.Sprintf("%-4s ", color.New(color.FgRed).Sprintf(b.Extension))
 			if len(b.Title) > libgen.TitleMaxLength {
 				pBookFormat = b.Title[:libgen.TitleMaxLength]
 			} else {
@@ -76,9 +73,17 @@ var searchCmd = &cobra.Command{
 			bookSelection = append(bookSelection, selectChoice)
 		}
 
+		promptTemplate := &promptui.SelectTemplates{
+			Active: `▸ {{ .Title | cyan | bold }}{{ if .Title }} ({{ .Title }}){{end}}`,
+			//Inactive: `  {{ .Title | cyan }}{{ if .Title }} ({{ .Title }}){{end}}`,
+			Selected: `{{ "✔" | green }} %s: {{ .Title | cyan }}{{ if .Title }} ({{ .Title }}){{end}}`,
+		}
+
 		prompt := promptui.Select{
-			Label: "Select Book: ",
-			Items: bookSelection,
+			Label:     "Select Book",
+			Items:     bookSelection,
+			Templates: promptTemplate,
+			Size:      resultsFlag,
 		}
 
 		_, result, err := prompt.Run()
@@ -101,6 +106,6 @@ var searchCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(searchCmd)
-	rootCmd.Flags().IntP("results", "r", 10, "Controls how many "+
+	searchCmd.Flags().IntVarP(&resultsFlag, "results", "r", 10, "Controls how many "+
 		"query results are displayed.")
 }

@@ -18,7 +18,10 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+
+	"github.com/ciehanski/libgen-cli/libgen"
 )
 
 // statusCmd represents the status command
@@ -27,21 +30,15 @@ var statusCmd = &cobra.Command{
 	Short: "Checks status of Library Genesis' mirrors.",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		checkMirror("http://libgen.lc")
-		checkMirror("http://gen.lib.rus.ec")
-		checkMirror("https://93.174.95.29")
-		checkMirror("http://booksdl.org")
-		checkMirror("https://b-ok.cc")
+		for _, url := range libgen.DownloadMirrors {
+			status := libgen.CheckMirror(url)
+			if status == http.StatusOK {
+				log.Printf("%s %s\n", color.GreenString("[OK]"), url.String())
+			} else {
+				log.Printf("%s %s\n", color.RedString("[FAIL]"), url.String())
+			}
+		}
 	},
-}
-
-func checkMirror(url string) {
-	r, err := http.Get(url)
-	if err != nil || r.StatusCode != http.StatusOK {
-		log.Printf("[FAIL] %s\n", url)
-	} else {
-		log.Printf("[OK] %s\n", url)
-	}
 }
 
 func init() {
