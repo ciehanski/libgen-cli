@@ -53,12 +53,11 @@ jobs:
     - name: Upload Release Assets
       id: upload-release-assets
       if: success() && github.ref == 'refs/heads/master'
-
       uses: actions/upload-release-asset@v1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
         asset_path: ./libgen-cli-$GOOS
         asset_name: libgen-cli-$GOOS
         asset_content_type: application/octet-stream
