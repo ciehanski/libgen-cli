@@ -36,28 +36,28 @@ jobs:
 
     - name: Build
       id: build
-      run: go build main.go
+      run: go build main.go -o libgen-cli-$GOOS
 
     - name: Create Release
-      id: create_release
+      id: create-release
       if: success()
       uses: actions/create-release@v1.0.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        release_name: ${{ github.ref }}
         draft: true
         prerelease: false
 
-    - name: Upload Release Asset
-      id: upload-release-asset
+    - name: Upload Release Assets
+      id: upload-release-assets
       if: success()
       uses: actions/upload-release-asset@v1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./libgen-cli
-        asset_name: libgen-cli
+        asset_path: ./libgen-cli-$GOOS
+        asset_name: libgen-cli-$GOOS
         asset_content_type: application/octet-stream

@@ -1,8 +1,7 @@
-## libgen-cli
+## libgen-cli [![Build Status](https://github.com/ciehanski/libgen-cli/workflows/libgen-cli/badge.svg)](https://github.com/ciehanski/libgen-cli/actions)
 
 libgen-cli is a command line interface application which allows users to
 quickly query the Library Genesis dataset and download any of its contents.
-
 
 ![Example](https://github.com/ciehanski/libgen-cli/blob/master/resources/libgen-cli-example.gif)
 
@@ -25,17 +24,28 @@ go install github.com/ciehanski/libgen-cli
 
 The _search_ command is the bread and butter of libgen-cli. Simply provide an
 additional argument to have libgen-cli scrap the Library Genesis dataset and
-provide you results available for download. An option to control how many
-results are returned is currently in progress. See below for an example:
+provide you results available for download. See below for a few examples:
 
 ```bash
 libgen-cli search kubernetes
 ```
 
+Filter the amount of results displayed:
+
+```bash
+libgen-cli search kubernetes -r 5
+```
+
+Filter by file extension:
+
+```bash
+libgen-cli search kubernetes -e pdf
+```
+
 #### Download:
 
 The _download_ command will allow you to download a specific book if already 
-know the hash.
+know the MD5 hash. See below for an example:
 
 ```bash
 libgen-cli download 2F2DBA2A621B693BB95601C16ED680F8
