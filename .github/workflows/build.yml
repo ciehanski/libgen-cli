@@ -1,4 +1,4 @@
-name: libgen-cli
+name: build
 on:
   push:
     branches:
