@@ -36,7 +36,7 @@ jobs:
 
     - name: Build
       id: build
-      run: go build main.go -o libgen-cli-$GOOS
+      run: go build -o libgen-cli-$GOOS main.go
 
     - name: Create Release
       id: create-release
