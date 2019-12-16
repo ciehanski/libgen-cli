@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/ciehanski/libgen-cli/libgen"
@@ -28,6 +29,8 @@ import (
 )
 
 var resultsFlag int
+var requireAuthor bool
+var extension string
 
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
@@ -46,6 +49,7 @@ var searchCmd = &cobra.Command{
 
 		if len(args) < 1 {
 			cmd.Help()
+			os.Exit(0)
 		}
 
 		searchQuery := strings.Join(args, " ")
@@ -56,7 +60,7 @@ var searchCmd = &cobra.Command{
 			log.Fatalf("error completing search query: %v", err)
 		}
 
-		books, err = libgen.GetDetails(hashes)
+		books, err = libgen.GetDetails(hashes, requireAuthor, extension)
 		if err != nil {
 			log.Fatalf("error retrieving results from LibGen API: %v", err)
 		}
@@ -101,11 +105,27 @@ var searchCmd = &cobra.Command{
 		if err := libgen.DownloadBook(selectedBook); err != nil {
 			log.Fatalf("error downloading book: %v", err)
 		}
+
+		//againPrompt := &promptui.Select{
+		//	Label:             "Run another search?",
+		//	Items:             []string{"Yes", "No"},
+		//}
+		//
+		//_, result, err = againPrompt.Run()
+		//if result == "Yes" {
+		//	Execute()
+		//} else {
+		//	os.Exit(0)
+		//}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(searchCmd)
-	searchCmd.Flags().IntVarP(&resultsFlag, "results", "r", 10, "Controls how many "+
+	searchCmd.Flags().IntVarP(&resultsFlag, "results", "r", 10, "controls how many "+
 		"query results are displayed.")
+	searchCmd.Flags().BoolVarP(&requireAuthor, "require-author", "a", false, "controls "+
+		"if the query results will return any media without a listed author.")
+	searchCmd.Flags().StringVarP(&extension, "ext", "e", "", "controls if the query "+
+		"results will return any media with a certain file extension.")
 }

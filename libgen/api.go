@@ -38,7 +38,19 @@ import (
 func Search(query string, results int) ([]string, error) {
 	searchMirror := getWorkingMirror(SearchMirrors)
 	if searchMirror.Host == "" {
-		log.Fatal("error: unable to reach any Library Genesis resources. Please try again later.")
+		return nil, errors.New("unable to reach any Library Genesis resources. Please try again later.")
+	}
+
+	// libgen search only allows query results of 25, 50 or 100.
+	// We handle that here
+	var res int
+	switch {
+	case results <= 25:
+		res = 25
+	case results <= 50:
+		res = 50
+	default:
+		res = 100
 	}
 
 	// Define URL with required query parameters
@@ -48,7 +60,7 @@ func Search(query string, results int) ([]string, error) {
 	q.Set("lg_topic", "libgen")
 	q.Set("open", "0")
 	q.Set("view", "simple")
-	q.Set("res", string(results))
+	q.Set("res", string(res))
 	q.Set("phrase", "1")
 	q.Set("column", "def")
 	searchMirror.RawQuery = q.Encode()
@@ -72,13 +84,13 @@ func Search(query string, results int) ([]string, error) {
 		return nil, err
 	}
 
-	return parseHashes(string(b)), nil
+	return parseHashes(string(b), results), nil
 }
 
 // GetDetails retrieves more details about a specific piece of media
 // based off of its unique hash/id. That information is then requested
 // in JSON format and sanitized in an array of Books.
-func GetDetails(hashes []string) ([]Book, error) {
+func GetDetails(hashes []string, requireAuthor bool, extension string) ([]Book, error) {
 	var (
 		books        []Book
 		formatAuthor string
@@ -111,7 +123,19 @@ func GetDetails(hashes []string) ([]Book, error) {
 			return nil, err
 		}
 
-		book := parseResponse(b)
+		book, err := parseResponse(b)
+		if err != nil {
+			return nil, err
+		}
+
+		// Flag filters
+		if requireAuthor && book.Author == "" {
+			continue
+		}
+		if extension != "" && extension != book.Extension {
+			continue
+		}
+
 		size, err := strconv.Atoi(book.Filesize)
 		if err != nil {
 			fsize = "N/A"
@@ -166,24 +190,28 @@ func getWorkingMirror(urls []url.URL) url.URL {
 	return searchMirror
 }
 
-func parseHashes(response string) []string {
+func parseHashes(response string, results int) []string {
 	var hashes []string
 	re := regexp.MustCompile(SearchHref)
 	matches := re.FindAllString(response, -1)
 
+	var counter int
 	for _, m := range matches {
+		if counter >= results {
+			break
+		}
 		re := regexp.MustCompile(SearchMD5)
 		hash := re.FindString(m)
 		if len(hash) == 32 {
 			hashes = append(hashes, hash)
+			counter += 1
 		}
 	}
 
 	return hashes
 }
 
-// TODO: add error handling
-func parseResponse(data []byte) Book {
+func parseResponse(data []byte) (Book, error) {
 	var book Book
 	var formatedResp []map[string]string
 
@@ -208,9 +236,11 @@ func parseResponse(data []byte) Book {
 				}
 			}
 		}
+	} else {
+		return Book{}, err
 	}
 
-	return book
+	return book, nil
 }
 
 func pFormat(key string, value string, col color.Attribute, align string) {

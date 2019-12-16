@@ -53,7 +53,11 @@ func DownloadBook(book Book) error {
 		filesize = r.ContentLength
 		bar := pb.Full.Start64(filesize)
 
-		out, err := os.Create(filename)
+		wd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		out, err := os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
 		if err != nil {
 			return err
 		}
@@ -82,6 +86,8 @@ func DownloadBook(book Book) error {
 
 func getDownloadUrl(book *Book) error {
 	var err error
+
+	// TODO: add redundant download methods/mirrors
 	baseUrl := &url.URL{
 		Scheme: "http",
 		Host:   "libgen.lc",
@@ -115,9 +121,9 @@ func getDownloadUrl(book *Book) error {
 	return nil
 }
 
-func getHref(HttpResponse string) string {
+func getHref(response string) string {
 	re := regexp.MustCompile(searchUrl)
-	matches := re.FindAllString(HttpResponse, -1)
+	matches := re.FindAllString(response, -1)
 
 	if len(matches) > 0 {
 		return matches[0]

@@ -21,6 +21,7 @@ const (
 	SearchHref      = "<a href='book/index.php.+</a>"
 	SearchMD5       = "[A-Z0-9]{32}"
 	searchUrl       = "http://booksdl.org/get\\.php\\?md5=\\w{32}\\&key=\\w{16}"
+	bokDownload     = "http://b-ok.cc/dl/w{6}/w{6}"
 	JsonQuery       = "id,title,author,filesize,extension,md5,year"
 	TitleMaxLength  = 65
 	AuthorMaxLength = 25
