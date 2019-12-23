@@ -60,14 +60,9 @@ var searchCmd = &cobra.Command{
 		searchQuery := strings.Join(args, " ")
 		fmt.Printf("++ Searching for: %s\n", searchQuery)
 
-		hashes, err := libgen.Search(searchQuery, resultsFlag)
+		books, err := libgen.Search(searchQuery, resultsFlag, true, requireAuthor, extension)
 		if err != nil {
 			log.Fatalf("error completing search query: %v", err)
-		}
-
-		books, err = libgen.GetDetails(hashes, true, requireAuthor, extension)
-		if err != nil {
-			log.Fatalf("error retrieving results from LibGen API: %v", err)
 		}
 
 		for _, b := range books {
@@ -110,7 +105,7 @@ var searchCmd = &cobra.Command{
 		fmt.Printf("Download started for: %s by %s\n", selectedBook.Title, selectedBook.Author)
 
 		if err := libgen.DownloadBook(selectedBook); err != nil {
-			log.Fatalf("error downloading book: %v", err)
+			log.Fatalf("error downloading %v: %v", selectedBook.Title, err)
 		}
 
 		fmt.Printf("%s %s", color.GreenString("[OK]"), selectedBook.Title+selectedBook.Extension)

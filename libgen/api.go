@@ -35,7 +35,7 @@ import (
 // then provides the web page's contents provided from the resulting http request
 // to the parseHashes() function to extract the specific hashes of matches
 // found from the search query provided.
-func Search(query string, results int) ([]string, error) {
+func Search(query string, results int, print bool, requireAuthor bool, extension string) ([]Book, error) {
 	searchMirror := getWorkingMirror(SearchMirrors)
 	if searchMirror.Host == "" {
 		return nil, errors.New("unable to reach any Library Genesis resources. Please try again later.")
@@ -85,7 +85,14 @@ func Search(query string, results int) ([]string, error) {
 		return nil, err
 	}
 
-	return parseHashes(string(b), results), nil
+	hashes := parseHashes(string(b), results)
+
+	books, err := GetDetails(hashes, print, requireAuthor, extension)
+	if err != nil {
+		return nil, err
+	}
+
+	return books, nil
 }
 
 // GetDetails retrieves more details about a specific piece of media
