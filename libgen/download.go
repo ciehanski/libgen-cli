@@ -27,24 +27,17 @@ import (
 	"strings"
 
 	"github.com/cheggaaa/pb/v3"
-	"github.com/fatih/color"
 )
 
 func DownloadBook(book Book) error {
 	var filesize int64
 	filename := getBookFilename(book)
 
-	log.Printf("Download started for: %s by %s\n", book.Title, book.Author)
-
-	err := getDownloadUrl(&book)
-	if err != nil {
+	if err := getDownloadUrl(&book); err != nil {
 		return err
 	}
-	if book.Url == "" {
-		return fmt.Errorf("unable to retrieve download link for book")
-	}
 
-	r, err := http.Get(book.Url)
+	r, err := http.Get(book.URL)
 	if err != nil {
 		return err
 	}
@@ -75,8 +68,6 @@ func DownloadBook(book Book) error {
 		if err := r.Body.Close(); err != nil {
 			return err
 		}
-
-		log.Printf("%s %s", color.GreenString("[OK]"), filename)
 	} else {
 		return fmt.Errorf("unable to reach mirror: HTTP %v", r.StatusCode)
 	}
@@ -87,7 +78,21 @@ func DownloadBook(book Book) error {
 func getDownloadUrl(book *Book) error {
 	var err error
 
-	// TODO: add redundant download methods/mirrors
+	// Try different download mirrors for the same hash
+	if err = getBooksdlDownloadUrl(book); err == nil && book.URL != "" {
+		return nil
+	} else if err = getBokDownloadUrl(book); err == nil && book.URL != "" {
+		return nil
+	}
+
+	if book.URL == "" {
+		return fmt.Errorf("unable to retrieve download link for book")
+	}
+
+	return err
+}
+
+func getBooksdlDownloadUrl(book *Book) error {
 	baseUrl := &url.URL{
 		Scheme: "http",
 		Host:   "libgen.lc",
@@ -111,7 +116,7 @@ func getDownloadUrl(book *Book) error {
 		if err != nil {
 			return err
 		}
-		book.Url = getHref(string(b))
+		book.URL = getHref(booksdlReg, string(b))
 	}
 
 	if err := r.Body.Close(); err != nil {
@@ -121,15 +126,47 @@ func getDownloadUrl(book *Book) error {
 	return nil
 }
 
-func getHref(response string) string {
-	re := regexp.MustCompile(searchUrl)
+func getBokDownloadUrl(book *Book) error {
+	baseUrl := url.URL{
+		Scheme: "https",
+		Host:   "b-ok.cc",
+		Path:   "md5/",
+	}
+
+	queryUrl := baseUrl.String() + book.Md5
+
+	r, err := http.Get(queryUrl)
+	if err != nil {
+		return err
+	}
+
+	if r.StatusCode != http.StatusOK {
+		return fmt.Errorf("unable to connect to mirror: %v", r.StatusCode)
+	} else {
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			return err
+		}
+		downloadUrl := getHref(bokReg, string(b))[6:]
+		book.URL = "https://b-ok.cc/dl/" + downloadUrl
+	}
+
+	if err := r.Body.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getHref(reg string, response string) string {
+	re := regexp.MustCompile(reg)
 	matches := re.FindAllString(response, -1)
 
 	if len(matches) > 0 {
 		return matches[0]
-	} else {
-		return ""
 	}
+
+	return ""
 }
 
 func getBookFilename(book Book) string {

@@ -18,14 +18,26 @@ package libgen
 import "net/url"
 
 const (
-	SearchHref      = "<a href='book/index.php.+</a>"
-	SearchMD5       = "[A-Z0-9]{32}"
-	searchUrl       = "http://booksdl.org/get\\.php\\?md5=\\w{32}\\&key=\\w{16}"
-	bokDownload     = "http://b-ok.cc/dl/w{6}/w{6}"
-	JsonQuery       = "id,title,author,filesize,extension,md5,year"
+	SearchHref = "<a href='book/index.php.+</a>"
+	SearchMD5  = "[A-Z0-9]{32}"
+	booksdlReg = "http://booksdl.org/get\\.php\\?md5=\\w{32}\\&key=\\w{16}"
+	bokReg     = `/book/\d{6}/\d{6}`
+	//libgenPwReg     = `http://libgen.pw/item/detail/id/\d*$`
+	JSONQuery       = "id,title,author,filesize,extension,md5,year"
 	TitleMaxLength  = 65
 	AuthorMaxLength = 25
 )
+
+type Book struct {
+	ID        string
+	Title     string
+	Author    string
+	Filesize  string
+	Extension string
+	Md5       string
+	Year      string
+	URL       string
+}
 
 var SearchMirrors = []url.URL{
 	{
@@ -47,9 +59,7 @@ var SearchMirrors = []url.URL{
 }
 
 var DownloadMirrors = []url.URL{
-	SearchMirrors[0],
 	SearchMirrors[1],
-	SearchMirrors[2],
 	SearchMirrors[3],
 	{
 		Scheme: "https",
@@ -63,15 +73,4 @@ var DownloadMirrors = []url.URL{
 		Scheme: "https",
 		Host:   "b-ok.cc",
 	},
-}
-
-type Book struct {
-	Id        string
-	Title     string
-	Author    string
-	Filesize  string
-	Extension string
-	Md5       string
-	Year      string
-	Url       string
 }

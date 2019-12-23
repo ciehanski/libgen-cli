@@ -15,7 +15,7 @@
 package libgen_cli
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/fatih/color"
@@ -33,9 +33,9 @@ var statusCmd = &cobra.Command{
 		for _, url := range libgen.DownloadMirrors {
 			status := libgen.CheckMirror(url)
 			if status == http.StatusOK {
-				log.Printf("%s %s\n", color.GreenString("[OK]"), url.String())
+				fmt.Printf("%s %s\n", color.GreenString("[OK]"), url.String())
 			} else {
-				log.Printf("%s %s\n", color.RedString("[FAIL]"), url.String())
+				fmt.Printf("%s %s\n", color.RedString("[FAIL]"), url.String())
 			}
 		}
 	},

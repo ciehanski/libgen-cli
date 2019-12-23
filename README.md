@@ -42,6 +42,13 @@ Filter by file extension:
 libgen-cli search kubernetes -e pdf
 ```
 
+Require that the author field is listed and available for the specific search
+results:
+ 
+```bash
+libgen-cli search kubernetes -a
+```
+
 #### Download:
 
 The _download_ command will allow you to download a specific book if already 
@@ -49,6 +56,15 @@ know the MD5 hash. See below for an example:
 
 ```bash
 libgen-cli download 2F2DBA2A621B693BB95601C16ED680F8
+```
+
+#### Dbdumps:
+
+The _dbdumps_ command will list out all of the compiled database dumps of
+libgen's database and allow you to download them with ease.
+
+```bash
+libgen-cli dbdumps
 ```
 
 #### Status:

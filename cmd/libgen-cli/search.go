@@ -17,20 +17,23 @@ package libgen_cli
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"log"
 	"os"
 	"strings"
 
-	"github.com/ciehanski/libgen-cli/libgen"
-
+	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+
+	"github.com/ciehanski/libgen-cli/libgen"
 )
 
-var resultsFlag int
-var requireAuthor bool
-var extension string
+var (
+	//mediaType string
+	resultsFlag   int
+	requireAuthor bool
+	extension     string
+)
 
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
@@ -48,25 +51,27 @@ var searchCmd = &cobra.Command{
 		)
 
 		if len(args) < 1 {
-			cmd.Help()
+			if err := cmd.Help(); err != nil {
+				log.Fatal(err)
+			}
 			os.Exit(0)
 		}
 
 		searchQuery := strings.Join(args, " ")
-		log.Printf("++ Searching for: %s\n", searchQuery)
+		fmt.Printf("++ Searching for: %s\n", searchQuery)
 
 		hashes, err := libgen.Search(searchQuery, resultsFlag)
 		if err != nil {
 			log.Fatalf("error completing search query: %v", err)
 		}
 
-		books, err = libgen.GetDetails(hashes, requireAuthor, extension)
+		books, err = libgen.GetDetails(hashes, true, requireAuthor, extension)
 		if err != nil {
 			log.Fatalf("error retrieving results from LibGen API: %v", err)
 		}
 
 		for _, b := range books {
-			selectChoice := fmt.Sprintf("%8s ", color.New(color.FgHiBlue).Sprintf(b.Id))
+			selectChoice := fmt.Sprintf("%8s ", color.New(color.FgHiBlue).Sprintf(b.ID))
 			selectChoice += fmt.Sprintf("%-4s ", color.New(color.FgRed).Sprintf(b.Extension))
 			if len(b.Title) > libgen.TitleMaxLength {
 				pBookFormat = b.Title[:libgen.TitleMaxLength]
@@ -102,26 +107,20 @@ var searchCmd = &cobra.Command{
 			}
 		}
 
+		fmt.Printf("Download started for: %s by %s\n", selectedBook.Title, selectedBook.Author)
+
 		if err := libgen.DownloadBook(selectedBook); err != nil {
 			log.Fatalf("error downloading book: %v", err)
 		}
 
-		//againPrompt := &promptui.Select{
-		//	Label:             "Run another search?",
-		//	Items:             []string{"Yes", "No"},
-		//}
-		//
-		//_, result, err = againPrompt.Run()
-		//if result == "Yes" {
-		//	Execute()
-		//} else {
-		//	os.Exit(0)
-		//}
+		fmt.Printf("%s %s", color.GreenString("[OK]"), selectedBook.Title+selectedBook.Extension)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(searchCmd)
+	//searchCmd.Flags().StringVarP(&mediaType, "media", "m", "libgen", "controls what "+
+	//	"type of media will be queried for. Ex: fiction, comics, scientific papers, etc.")
 	searchCmd.Flags().IntVarP(&resultsFlag, "results", "r", 10, "controls how many "+
 		"query results are displayed.")
 	searchCmd.Flags().BoolVarP(&requireAuthor, "require-author", "a", false, "controls "+
