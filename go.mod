@@ -7,7 +7,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/fatih/color v1.7.0
 	github.com/json-iterator/go v1.1.8
-	github.com/manifoldco/promptui v0.6.0
+	github.com/manifoldco/promptui v0.7.0
 	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/spf13/cobra v0.0.5
 )
