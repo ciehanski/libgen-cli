@@ -60,7 +60,6 @@ libgen download 2F2DBA2A621B693BB95601C16ED680F8
 
 The _download-all_ command will allow you to download all query results. See
 below for an example:
-
 ```bash
 libgen download-all kubernetes
 ```
