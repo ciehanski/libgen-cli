@@ -41,7 +41,7 @@ var searchCmd = &cobra.Command{
 	Short: "Search for content hosted by Library Genesis",
 	Long: `
 	Search pattern and get a list of hash map urls to it, and show
-	formatted title + link`,
+	formatted title + link.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var (
 			books         []libgen.Book
