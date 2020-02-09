@@ -23,7 +23,7 @@ go install github.com/ciehanski/libgen-cli
 #### Search:
 
 The _search_ command is the bread and butter of libgen-cli. Simply provide an
-additional argument to have libgen-cli scrap the Library Genesis dataset and
+additional argument to have libgen-cli scrape the Library Genesis dataset and
 provide you results available for download. See below for a few examples:
 
 ```bash
