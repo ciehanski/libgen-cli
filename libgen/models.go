@@ -53,6 +53,10 @@ var SearchMirrors = []url.URL{
 		Host:   "libgen.li",
 	},
 	{
+		Scheme: "https",
+		Host:   "libgen.is",
+	},
+	{
 		Scheme: "http",
 		Host:   "185.39.10.101",
 	},
