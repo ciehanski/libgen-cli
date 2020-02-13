@@ -28,6 +28,7 @@ const (
 	AuthorMaxLength = 25
 )
 
+// Book contains all the pertinent information required for a resource queried by libgen.
 type Book struct {
 	ID        string
 	Title     string
@@ -39,6 +40,7 @@ type Book struct {
 	URL       string
 }
 
+// SearchMirrors is used by libgen-cli strictly for querying resources.
 var SearchMirrors = []url.URL{
 	{
 		Scheme: "http",
@@ -62,6 +64,7 @@ var SearchMirrors = []url.URL{
 	},
 }
 
+// DownloadMirrors is used by libgen-cli strictly for downloading resources.
 var DownloadMirrors = []url.URL{
 	SearchMirrors[1],
 	SearchMirrors[3],

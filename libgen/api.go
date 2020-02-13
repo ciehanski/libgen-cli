@@ -38,11 +38,11 @@ import (
 func Search(query string, results int, print bool, requireAuthor bool, extension string) ([]Book, error) {
 	searchMirror := getWorkingMirror(SearchMirrors)
 	if searchMirror.Host == "" {
-		return nil, errors.New("unable to reach any Library Genesis resources. Please try again later.")
+		return nil, errors.New("unable to reach any Library Genesis resources. Please try again later")
 	}
 
 	// libgen search only allows query results of 25, 50 or 100.
-	// We handle that here
+	// We handle that here:
 	var res int
 	switch {
 	case results <= 25:
@@ -180,6 +180,7 @@ func GetDetails(hashes []string, print bool, requireAuthor bool, extension strin
 	return books, nil
 }
 
+// CheckMirror simply checks HTTP status codes on mirror URLs.
 func CheckMirror(url url.URL) int {
 	r, err := http.Get(url.String())
 	if err != nil || r.StatusCode != http.StatusOK {
