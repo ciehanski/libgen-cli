@@ -22,9 +22,8 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "libgen",
-	Short: "A command line interface to access Library Genesis' library.",
-	Long: `libgen-cli queries Library Genesis, lists all results of a specific query, 
-	and makes them available for download. Simple and easy.`,
+	Short: "A command line interface tool to access Library Genesis' library.",
+	Long:  `libgen-cli queries Library Genesis, lists all results of a specific query, and makes them available for download. Simple and easy.`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

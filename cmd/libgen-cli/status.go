@@ -26,9 +26,10 @@ import (
 
 // statusCmd represents the status command
 var statusCmd = &cobra.Command{
-	Use:   "status",
-	Short: "Checks the status of Library Genesis' mirrors.",
-	Long:  ``,
+	Use:     "status",
+	Short:   "Checks the status of Library Genesis' mirrors.",
+	Long:    ``,
+	Example: "libgen status",
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, url := range libgen.DownloadMirrors {
 			status := libgen.CheckMirror(url)

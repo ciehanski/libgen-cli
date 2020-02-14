@@ -38,10 +38,10 @@ var (
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
 	Use:   "search",
-	Short: "Search for content hosted by Library Genesis",
-	Long: `
-	Search pattern and get a list of hash map urls to it, and show
+	Short: "Query all content hosted by Library Genesis.",
+	Long: `Search pattern and get a list of hash map urls to it, and show
 	formatted title + link.`,
+	Example: "libgen search kubernetes",
 	Run: func(cmd *cobra.Command, args []string) {
 		var (
 			books         []libgen.Book
