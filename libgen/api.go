@@ -108,7 +108,7 @@ func GetDetails(hashes []string, print bool, requireAuthor bool, extension strin
 	for _, hash := range hashes {
 		searchMirror := getWorkingMirror(SearchMirrors)
 		if searchMirror.Host == "" {
-			err := "unable to reach any Library Genesis resources. Please try again later."
+			err := "unable to reach any Library Genesis resources"
 			log.Printf(err)
 			return nil, errors.New(err)
 		}

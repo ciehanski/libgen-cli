@@ -16,6 +16,7 @@
 package libgen
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -32,7 +33,7 @@ import (
 // DownloadBook grabs the download URL for the book requested. First, it queries Booksdl.org and then
 // b-ok.cc for valid URL. Then, the download process is initiated with a progress bar displayed to
 // the user's CLI.
-func DownloadBook(book Book) error {
+func DownloadBook(book Book, output string) error {
 	var filesize int64
 	filename := getBookFilename(book)
 
@@ -46,16 +47,31 @@ func DownloadBook(book Book) error {
 	}
 
 	if r.StatusCode == http.StatusOK {
+		var (
+			out *os.File
+			err error
+		)
 		filesize = r.ContentLength
 		bar := pb.Full.Start64(filesize)
 
-		wd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		out, err := os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
-		if err != nil {
-			return err
+		if output == "" {
+			wd, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+			out, err = os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
+			if err != nil {
+				return err
+			}
+		} else {
+			if stat, err := os.Stat(output); err == nil && stat.IsDir() {
+				out, err = os.Create(fmt.Sprintf("%s/%s", output, filename))
+				if err != nil {
+					return err
+				}
+			} else {
+				return errors.New("invalid output path")
+			}
 		}
 
 		_, err = io.Copy(out, bar.NewProxyReader(r.Body))
