@@ -16,6 +16,7 @@
 package libgen
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -29,11 +30,14 @@ import (
 	"github.com/cheggaaa/pb/v3"
 )
 
-func DownloadBook(book Book) error {
+// DownloadBook grabs the download URL for the book requested. First, it queries Booksdl.org and then
+// b-ok.cc for valid URL. Then, the download process is initiated with a progress bar displayed to
+// the user's CLI.
+func DownloadBook(book Book, output string) error {
 	var filesize int64
 	filename := getBookFilename(book)
 
-	if err := getDownloadUrl(&book); err != nil {
+	if err := getDownloadURL(&book); err != nil {
 		return err
 	}
 
@@ -43,16 +47,31 @@ func DownloadBook(book Book) error {
 	}
 
 	if r.StatusCode == http.StatusOK {
+		var (
+			out *os.File
+			err error
+		)
 		filesize = r.ContentLength
 		bar := pb.Full.Start64(filesize)
 
-		wd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		out, err := os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
-		if err != nil {
-			return err
+		if output == "" {
+			wd, err := os.Getwd()
+			if err != nil {
+				return err
+			}
+			out, err = os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
+			if err != nil {
+				return err
+			}
+		} else {
+			if stat, err := os.Stat(output); err == nil && stat.IsDir() {
+				out, err = os.Create(fmt.Sprintf("%s/%s", output, filename))
+				if err != nil {
+					return err
+				}
+			} else {
+				return errors.New("invalid output path")
+			}
 		}
 
 		_, err = io.Copy(out, bar.NewProxyReader(r.Body))
@@ -75,13 +94,13 @@ func DownloadBook(book Book) error {
 	return nil
 }
 
-func getDownloadUrl(book *Book) error {
+func getDownloadURL(book *Book) error {
 	var err error
 
 	// Try different download mirrors for the same hash
-	if err = getBooksdlDownloadUrl(book); err == nil && book.URL != "" {
+	if err = getBooksdlDownloadURL(book); err == nil && book.URL != "" {
 		return nil
-	} else if err = getBokDownloadUrl(book); err == nil && book.URL != "" {
+	} else if err = getBokDownloadURL(book); err == nil && book.URL != "" {
 		return nil
 	}
 
@@ -92,20 +111,20 @@ func getDownloadUrl(book *Book) error {
 	return err
 }
 
-func getBooksdlDownloadUrl(book *Book) error {
-	baseUrl := &url.URL{
+func getBooksdlDownloadURL(book *Book) error {
+	baseURL := &url.URL{
 		Scheme: "http",
 		Host:   "libgen.lc",
 		Path:   "ads.php",
 	}
 
-	q := baseUrl.Query()
+	q := baseURL.Query()
 	q.Set("md5", book.Md5)
-	baseUrl.RawQuery = q.Encode()
+	baseURL.RawQuery = q.Encode()
 
-	r, err := http.Get(baseUrl.String())
+	r, err := http.Get(baseURL.String())
 	if err != nil {
-		log.Printf("http.Get(%q) error: %v", baseUrl, err)
+		log.Printf("http.Get(%q) error: %v", baseURL, err)
 		return err
 	}
 
@@ -126,16 +145,16 @@ func getBooksdlDownloadUrl(book *Book) error {
 	return nil
 }
 
-func getBokDownloadUrl(book *Book) error {
-	baseUrl := url.URL{
+func getBokDownloadURL(book *Book) error {
+	baseURL := url.URL{
 		Scheme: "https",
 		Host:   "b-ok.cc",
 		Path:   "md5/",
 	}
 
-	queryUrl := baseUrl.String() + book.Md5
+	queryURL := baseURL.String() + book.Md5
 
-	r, err := http.Get(queryUrl)
+	r, err := http.Get(queryURL)
 	if err != nil {
 		return err
 	}
@@ -147,8 +166,8 @@ func getBokDownloadUrl(book *Book) error {
 		if err != nil {
 			return err
 		}
-		downloadUrl := getHref(bokReg, string(b))[6:]
-		book.URL = "https://b-ok.cc/dl/" + downloadUrl
+		downloadURL := getHref(bokReg, string(b))[6:]
+		book.URL = "https://b-ok.cc/dl/" + downloadURL
 	}
 
 	if err := r.Body.Close(); err != nil {
