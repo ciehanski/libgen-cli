@@ -33,15 +33,16 @@ var (
 	resultsFlag   int
 	requireAuthor bool
 	extension     string
+	searchOutput  string
 )
 
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
 	Use:   "search",
-	Short: "Search for content hosted by Library Genesis",
-	Long: `
-	Search pattern and get a list of hash map urls to it, and show
+	Short: "Query all content hosted by Library Genesis.",
+	Long: `Search pattern and get a list of hash map urls to it, and show
 	formatted title + link.`,
+	Example: "libgen search kubernetes",
 	Run: func(cmd *cobra.Command, args []string) {
 		var (
 			books         []libgen.Book
@@ -104,7 +105,7 @@ var searchCmd = &cobra.Command{
 
 		fmt.Printf("Download started for: %s by %s\n", selectedBook.Title, selectedBook.Author)
 
-		if err := libgen.DownloadBook(selectedBook); err != nil {
+		if err := libgen.DownloadBook(selectedBook, searchOutput); err != nil {
 			log.Fatalf("error downloading %v: %v", selectedBook.Title, err)
 		}
 
@@ -122,4 +123,6 @@ func init() {
 		"if the query results will return any media without a listed author.")
 	searchCmd.Flags().StringVarP(&extension, "ext", "e", "", "controls if the query "+
 		"results will return any media with a certain file extension.")
+	searchCmd.Flags().StringVarP(&searchOutput, "output", "o", "", "where you want "+
+		"libgen-cli to save your download.")
 }
