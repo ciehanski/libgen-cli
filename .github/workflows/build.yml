@@ -49,7 +49,7 @@ jobs:
 
     - name: Submit Code Coverage
       id: submit-code-cov
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os != 'windows-latest'
       env:
         COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
