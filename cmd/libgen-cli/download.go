@@ -41,7 +41,7 @@ var downloadCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		book, err := libgen.GetDetails(args, true, false, "")
+		book, err := libgen.GetDetails(args, libgen.GetWorkingMirror(libgen.SearchMirrors), true, false, "")
 		if err != nil {
 			log.Fatalf("error retrieving results from LibGen API: %v", err)
 		}

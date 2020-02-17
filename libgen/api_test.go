@@ -39,6 +39,7 @@ func TestSearch(t *testing.T) {
 
 func TestGetDetails(t *testing.T) {
 	books, err := GetDetails([]string{"2F2DBA2A621B693BB95601C16ED680F8", "06E6135019C8F2F43158ABA9ABDC610E"},
+		GetWorkingMirror(SearchMirrors),
 		false,
 		false,
 		"")
@@ -1221,7 +1222,7 @@ func TestParseHashes(t *testing.T) {
 
 func TestParseResponse(t *testing.T) {
 	// Test on 2F2DBA2A621B693BB95601C16ED680F8
-	searchMirror := getWorkingMirror(SearchMirrors)
+	searchMirror := GetWorkingMirror(SearchMirrors)
 
 	searchMirror.Path = "json.php"
 	q := searchMirror.Query()

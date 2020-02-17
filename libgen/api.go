@@ -33,12 +33,12 @@ import (
 	"github.com/fatih/color"
 )
 
-// Search sends a query the search.php page hosted by gen.lib.rus.ec and
-// then provides the web page's contents provided from the resulting http request
-// to the parseHashes() function to extract the specific hashes of matches
-// found from the search query provided.
+// Search sends a query to the search.php page hosted by gen.lib.rus.ec(or any
+// similar mirror) and then provides the web page's contents provided from the
+// resulting http request to the parseHashes() function to extract the specific
+// hashes of matches found from the search query provided.
 func Search(query string, results int, print bool, requireAuthor bool, extension string) ([]Book, error) {
-	searchMirror := getWorkingMirror(SearchMirrors)
+	searchMirror := GetWorkingMirror(SearchMirrors)
 	if searchMirror.Host == "" {
 		return nil, errors.New("unable to reach any Library Genesis resources")
 	}
@@ -90,7 +90,7 @@ func Search(query string, results int, print bool, requireAuthor bool, extension
 	// Get hashes from raw webpage and store them in hashes
 	hashes := parseHashes(string(b), results)
 
-	books, err := GetDetails(hashes, print, requireAuthor, extension)
+	books, err := GetDetails(hashes, searchMirror, print, requireAuthor, extension)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func Search(query string, results int, print bool, requireAuthor bool, extension
 // GetDetails retrieves more details about a specific piece of media
 // based off of its unique hash/id. That information is then requested
 // in JSON format and sanitized in an array of Books.
-func GetDetails(hashes []string, print bool, requireAuthor bool, extension string) ([]Book, error) {
+func GetDetails(hashes []string, searchMirror url.URL, print bool, requireAuthor bool, extension string) ([]Book, error) {
 	var (
 		books        []Book
 		formatAuthor string
@@ -109,13 +109,6 @@ func GetDetails(hashes []string, print bool, requireAuthor bool, extension strin
 	)
 
 	for _, hash := range hashes {
-		searchMirror := getWorkingMirror(SearchMirrors)
-		if searchMirror.Host == "" {
-			err := "unable to reach any Library Genesis resources"
-			log.Printf(err)
-			return nil, errors.New(err)
-		}
-
 		searchMirror.Path = "json.php"
 		q := searchMirror.Query()
 		q.Set("ids", hash)
@@ -194,22 +187,22 @@ func CheckMirror(url url.URL) int {
 	return http.StatusOK
 }
 
-func getWorkingMirror(urls []url.URL) url.URL {
-	var searchMirror url.URL
+func GetWorkingMirror(urls []url.URL) url.URL {
+	var mirror url.URL
 	rand.Seed(time.Now().UnixNano())
 
 	for {
 		randMirror := urls[rand.Intn(len(urls))]
 
 		if CheckMirror(randMirror) == http.StatusOK {
-			searchMirror = randMirror
+			mirror = randMirror
 			break
 		} else {
 			continue
 		}
 	}
 
-	return searchMirror
+	return mirror
 }
 
 func parseHashes(response string, results int) []string {
