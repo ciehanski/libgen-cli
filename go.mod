@@ -7,5 +7,5 @@ require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/fatih/color v1.9.0
 	github.com/manifoldco/promptui v0.7.0
-	github.com/spf13/cobra v0.0.5
+	github.com/spf13/cobra v0.0.6
 )
