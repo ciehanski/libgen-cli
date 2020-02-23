@@ -15,6 +15,7 @@
 package libgen
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -24,6 +25,7 @@ import (
 func TestSearch(t *testing.T) {
 	results, err := Search(
 		"test",
+		GetWorkingMirror(SearchMirrors),
 		1,
 		false,
 		false,
@@ -1233,8 +1235,15 @@ func TestParseResponse(t *testing.T) {
 	r, _ := http.Get(searchMirror.String())
 	b, _ := ioutil.ReadAll(r.Body)
 
-	_, err := parseResponse(b)
+	book, err := parseResponse(b)
 	if err != nil {
 		t.Error(err)
+	}
+	if book.Md5 != "2f2dba2a621b693bb95601c16ed680f8" {
+		fmt.Println(book.Md5)
+		t.Error("incorrect MD5")
+	}
+	if book.Author != "Larry J. Crockett" {
+		t.Error("incorrect author")
 	}
 }

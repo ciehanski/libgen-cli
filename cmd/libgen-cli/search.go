@@ -38,10 +38,9 @@ var (
 
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
-	Use:   "search",
-	Short: "Query all content hosted by Library Genesis.",
-	Long: `Search pattern and get a list of hash map urls to it, and show
-	formatted title + link.`,
+	Use:     "search",
+	Short:   "Query all content hosted by Library Genesis.",
+	Long:    `Searches for all resources that result from the provided query and then provides them for download.`,
 	Example: "libgen search kubernetes",
 	Run: func(cmd *cobra.Command, args []string) {
 		var (
@@ -61,9 +60,20 @@ var searchCmd = &cobra.Command{
 		searchQuery := strings.Join(args, " ")
 		fmt.Printf("++ Searching for: %s\n", searchQuery)
 
-		books, err := libgen.Search(searchQuery, resultsFlag, true, requireAuthor, extension)
+		books, err := libgen.Search(
+			searchQuery,
+			libgen.GetWorkingMirror(libgen.SearchMirrors),
+			resultsFlag,
+			true,
+			requireAuthor,
+			extension,
+		)
 		if err != nil {
 			log.Fatalf("error completing search query: %v", err)
+		}
+		if len(books) == 0 {
+			fmt.Print("\nNo results found.\n")
+			os.Exit(0)
 		}
 
 		for _, b := range books {
@@ -91,9 +101,12 @@ var searchCmd = &cobra.Command{
 			Size:      resultsFlag,
 		}
 
+		fmt.Println(strings.Repeat("-", 80))
+
 		_, result, err := prompt.Run()
 		if err != nil {
-			log.Fatalf("error selecting book: %v\n", err)
+			fmt.Print(err)
+			os.Exit(0)
 		}
 
 		for i, b := range bookSelection {
@@ -105,16 +118,19 @@ var searchCmd = &cobra.Command{
 
 		fmt.Printf("Download started for: %s by %s\n", selectedBook.Title, selectedBook.Author)
 
+		if err := libgen.GetDownloadURL(&selectedBook); err != nil {
+			log.Fatalf("error retrieving valid download URL: %v", err)
+		}
 		if err := libgen.DownloadBook(selectedBook, searchOutput); err != nil {
 			log.Fatalf("error downloading %v: %v", selectedBook.Title, err)
 		}
 
-		fmt.Printf("%s %s", color.GreenString("[OK]"), selectedBook.Title+selectedBook.Extension)
+		fmt.Printf("\n%s %s by %s.%s\n", color.GreenString("[OK]"),
+			selectedBook.Title, selectedBook.Author, selectedBook.Extension)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(searchCmd)
 	//searchCmd.Flags().StringVarP(&mediaType, "media", "m", "libgen", "controls what "+
 	//	"type of media will be queried for. Ex: fiction, comics, scientific papers, etc.")
 	searchCmd.Flags().IntVarP(&resultsFlag, "results", "r", 10, "controls how many "+

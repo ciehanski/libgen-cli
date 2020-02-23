@@ -17,7 +17,6 @@ package libgen
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -37,12 +36,7 @@ import (
 // similar mirror) and then provides the web page's contents provided from the
 // resulting http request to the parseHashes() function to extract the specific
 // hashes of matches found from the search query provided.
-func Search(query string, results int, print bool, requireAuthor bool, extension string) ([]Book, error) {
-	searchMirror := GetWorkingMirror(SearchMirrors)
-	if searchMirror.Host == "" {
-		return nil, errors.New("unable to reach any Library Genesis resources")
-	}
-
+func Search(query string, searchMirror url.URL, results int, print bool, requireAuthor bool, extension string) ([]Book, error) {
 	// libgen search only allows query results of 25, 50 or 100.
 	// We handle that here
 	var res int
@@ -68,7 +62,8 @@ func Search(query string, results int, print bool, requireAuthor bool, extension
 	searchMirror.RawQuery = q.Encode()
 
 	// Execute GET request on search query
-	r, err := http.Get(searchMirror.String())
+	client := http.Client{Timeout: time.Second * 5}
+	r, err := client.Get(searchMirror.String())
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +103,7 @@ func GetDetails(hashes []string, searchMirror url.URL, print bool, requireAuthor
 		fsize        string
 	)
 
+	// For each hash found on the page, parse it into a Book struct
 	for _, hash := range hashes {
 		searchMirror.Path = "json.php"
 		q := searchMirror.Query()
@@ -115,7 +111,8 @@ func GetDetails(hashes []string, searchMirror url.URL, print bool, requireAuthor
 		q.Set("fields", JSONQuery)
 		searchMirror.RawQuery = q.Encode()
 
-		r, err := http.Get(searchMirror.String())
+		client := http.Client{Timeout: time.Second * 5}
+		r, err := client.Get(searchMirror.String())
 		if err != nil {
 			log.Printf("error reaching API: %v", err)
 			return nil, err
@@ -139,7 +136,6 @@ func GetDetails(hashes []string, searchMirror url.URL, print bool, requireAuthor
 		if extension != "" && extension != book.Extension {
 			continue
 		}
-
 		if print {
 			size, err := strconv.Atoi(book.Filesize)
 			if err != nil {
@@ -148,6 +144,7 @@ func GetDetails(hashes []string, searchMirror url.URL, print bool, requireAuthor
 				fsize = humanize.Bytes(uint64(size))
 			}
 
+			// Print separation lines
 			fmt.Println(strings.Repeat("-", 80))
 			fTitle := fmt.Sprintf("%5s %s", color.New(color.FgHiBlue).Sprintf(book.ID), book.Title)
 			fTitle = formatTitle(fTitle)
@@ -167,6 +164,7 @@ func GetDetails(hashes []string, searchMirror url.URL, print bool, requireAuthor
 			fmt.Println()
 		}
 
+		// Add valid book to the []Book for the search
 		books = append(books, book)
 
 		if err := r.Body.Close(); err != nil {
@@ -179,7 +177,10 @@ func GetDetails(hashes []string, searchMirror url.URL, print bool, requireAuthor
 
 // CheckMirror returns the HTTP status code of the URL provided.
 func CheckMirror(url url.URL) int {
-	r, err := http.Get(url.String())
+	client := http.Client{
+		Timeout: time.Second * 5,
+	}
+	r, err := client.Get(url.String())
 	if err != nil || r.StatusCode != http.StatusOK {
 		return http.StatusBadGateway
 	}
@@ -187,9 +188,11 @@ func CheckMirror(url url.URL) int {
 	return http.StatusOK
 }
 
+// GetWorkingMirror selects a random mirror from the []url.URL
+// provided and checks the mirror for a proper HTTP status code
+// for working order.
 func GetWorkingMirror(urls []url.URL) url.URL {
 	var mirror url.URL
-	rand.Seed(time.Now().UnixNano())
 
 	for {
 		randMirror := urls[rand.Intn(len(urls))]
@@ -205,6 +208,8 @@ func GetWorkingMirror(urls []url.URL) url.URL {
 	return mirror
 }
 
+// parseHashes takes in a HTTP response and scans it for
+// an MD5 hash and then returns the found hashes.
 func parseHashes(response string, results int) []string {
 	var hashes []string
 	re := regexp.MustCompile(SearchHref)
@@ -284,6 +289,8 @@ func formatTitle(title string) string {
 	return strings.Join(fTitle, " ")
 }
 
+// prettify is a helper function that adds color and
+// formats text returned to the user.
 func prettify(key string, value string, col color.Attribute, align string) {
 	c := color.New(col).SprintFunc()
 	a := fmt.Sprintf("%%%ss ", align)

@@ -21,17 +21,19 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
 	"github.com/ciehanski/libgen-cli/libgen"
 )
 
 var downloadAllOutput string
+var downloadAllResults int
 
 var downloadAllCmd = &cobra.Command{
 	Use:     "download-all",
-	Short:   "",
-	Long:    ``,
+	Short:   "Downloads all found resources for a specified query.",
+	Long:    `Searches for a specific query and downloads all the results found.`,
 	Example: "libgen download-all kubernetes",
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -45,27 +47,42 @@ var downloadAllCmd = &cobra.Command{
 		searchQuery := strings.Join(args, " ")
 		fmt.Printf("++ Searching for: %s\n", searchQuery)
 
-		books, err := libgen.Search(searchQuery, 10, false, false, "")
+		books, err := libgen.Search(
+			searchQuery,
+			libgen.GetWorkingMirror(libgen.SearchMirrors),
+			downloadAllResults,
+			false,
+			false,
+			"",
+		)
 		if err != nil {
 			log.Fatalf("error completing search query: %v", err)
 		}
 
+		// TODO: fix; works outside of goroutine when run synchronously
 		var wg sync.WaitGroup
 		for _, book := range books {
 			wg.Add(1)
+			if err := libgen.GetDownloadURL(&book); err != nil {
+				log.Println(err)
+				continue
+			}
 			go func() {
+				defer wg.Done()
 				if err := libgen.DownloadBook(book, downloadAllOutput); err != nil {
 					fmt.Printf("error downloading %v: %v\n", book.Title, err)
 				}
-				wg.Done()
 			}()
 		}
 		wg.Wait()
+
+		fmt.Printf("\n%s\n", color.GreenString("[OK]"))
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(downloadAllCmd)
-	downloadAllCmd.Flags().StringVarP(&downloadAllOutput, "output", "o", "", "where you want "+
-		"libgen-cli to save your download.")
+	downloadAllCmd.Flags().StringVarP(&downloadAllOutput, "output", "o", "", "where "+
+		"you want libgen-cli to save your download.")
+	downloadAllCmd.Flags().IntVarP(&downloadAllResults, "results", "r", 10, "controls "+
+		"how many query results are displayed.")
 }

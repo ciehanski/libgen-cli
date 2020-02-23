@@ -27,7 +27,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/cheggaaa/pb/v3"
 )
@@ -39,10 +38,13 @@ func DownloadBook(book Book, output string) error {
 	var filesize int64
 	filename := getBookFilename(book)
 
-	if err := getDownloadURL(&book); err != nil {
-		return err
+	if book.URL == "" {
+		if err := GetDownloadURL(&book); err != nil {
+			return err
+		}
 	}
 
+	//client := http.Client{Timeout: time.Second * 5}
 	r, err := http.Get(book.URL)
 	if err != nil {
 		return err
@@ -56,21 +58,23 @@ func DownloadBook(book Book, output string) error {
 		filesize = r.ContentLength
 		bar := pb.Full.Start64(filesize)
 
-		var oserr error
+		// check if output folder was provided. If not, create
+		// one at the current directory called "libgen."
+		var osErr error
 		if output == "" {
 			wd, err := os.Getwd()
 			if err != nil {
 				return err
 			}
 			if stat, err := os.Stat(fmt.Sprintf("%s/libgen", wd)); err == nil && stat.IsDir() {
-				out, oserr = os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
+				out, osErr = os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
 			} else {
 				if err := os.Mkdir(fmt.Sprintf("%s/libgen", wd), 0700); err != nil {
 					return err
 				}
-				out, oserr = os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
+				out, osErr = os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
 			}
-			if oserr != nil {
+			if osErr != nil {
 				return err
 			}
 		} else {
@@ -90,7 +94,6 @@ func DownloadBook(book Book, output string) error {
 		}
 
 		bar.Finish()
-
 		if err := out.Close(); err != nil {
 			return err
 		}
@@ -104,20 +107,23 @@ func DownloadBook(book Book, output string) error {
 	return nil
 }
 
-// getDownloadURL picks a random download mirror to download the specified
+// GetDownloadURL picks a random download mirror to download the specified
 // resource from.
-func getDownloadURL(book *Book) error {
-	rand.Seed(time.Now().UnixNano())
+func GetDownloadURL(book *Book) error {
 	chosenMirror := DownloadMirrors[rand.Intn(2)]
 
 	switch chosenMirror.String() {
 	case "http://booksdl.org":
 		if err := getBooksdlDownloadURL(book); err != nil {
-			return err
+			if err := getBokDownloadURL(book); err != nil {
+				return err
+			}
 		}
 	case "https://b-ok.cc":
 		if err := getBokDownloadURL(book); err != nil {
-			return err
+			if err := getBooksdlDownloadURL(book); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -184,8 +190,12 @@ func getBokDownloadURL(book *Book) error {
 	if err != nil {
 		return err
 	}
-	downloadURL := getHref(bokReg, string(b))[6:]
-	book.URL = "https://b-ok.cc/dl/" + downloadURL
+
+	downloadURL := getHref(bokReg, string(b))
+	if downloadURL == "" {
+		return errors.New("no valid download URL found")
+	}
+	book.URL = "https://b-ok.cc" + downloadURL
 
 	if err := r.Body.Close(); err != nil {
 		return err
@@ -208,7 +218,7 @@ func getHref(reg string, response string) string {
 func getBookFilename(book Book) string {
 	var tmp []string
 	tmp = append(tmp, book.Title)
-	tmp = append(tmp, fmt.Sprintf(" (%s - %s)", book.Year, book.Author))
+	tmp = append(tmp, fmt.Sprintf(" by %s", book.Author))
 	tmp = append(tmp, fmt.Sprintf(".%s", book.Extension))
 	return strings.Join(tmp, "")
 }

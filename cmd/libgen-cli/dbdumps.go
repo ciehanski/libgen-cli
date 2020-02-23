@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/fatih/color"
@@ -33,8 +34,8 @@ var dbdumpsOutput string
 
 var dbdumpsCmd = &cobra.Command{
 	Use:     "dbdumps",
-	Short:   "",
-	Long:    ``,
+	Short:   "Allows users to download any selection of Library Genesis' database dumps.",
+	Long:    `A collection of Library Genesis' compressed SQL database dumps can be downloaded using this command.`,
 	Example: "libgen dbdumps",
 	Run: func(cmd *cobra.Command, args []string) {
 		r, err := http.Get("http://gen.lib.rus.ec/dbdumps/")
@@ -51,6 +52,10 @@ var dbdumpsCmd = &cobra.Command{
 		if dbdumps == nil {
 			log.Fatal("error parsing dbdumps. No dbdumps found.")
 		}
+		if len(dbdumps) == 0 {
+			fmt.Print("\nNo results found.\n")
+			os.Exit(0)
+		}
 
 		promptTemplate := &promptui.SelectTemplates{
 			Active: `▸ {{ .Title | cyan | bold }}{{ if .Title }} ({{ .Title }}){{end}}`,
@@ -64,9 +69,12 @@ var dbdumpsCmd = &cobra.Command{
 			Templates: promptTemplate,
 		}
 
+		fmt.Println(strings.Repeat("-", 80))
+
 		_, result, err := prompt.Run()
 		if err != nil {
-			log.Fatalf("error selecting dbdump: %v\n", err)
+			fmt.Print(err)
+			os.Exit(0)
 		}
 
 		var selectedDbDump string
@@ -83,7 +91,7 @@ var dbdumpsCmd = &cobra.Command{
 			log.Fatalf("error download dbdump: %v", err)
 		}
 
-		fmt.Printf("%s %s", color.GreenString("[OK]"), selectedDbDump)
+		fmt.Printf("\n%s %s\n", color.GreenString("[OK]"), selectedDbDump)
 	},
 }
 
@@ -145,7 +153,6 @@ func removeQuotes(s string) string {
 }
 
 func init() {
-	rootCmd.AddCommand(dbdumpsCmd)
 	dbdumpsCmd.Flags().StringVarP(&dbdumpsOutput, "output", "o", "", "where you want "+
 		"libgen-cli to save your download.")
 }

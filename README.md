@@ -30,7 +30,8 @@ provide you results available for download. See below for a few examples:
 libgen search kubernetes
 ```
 
-Filter the amount of results displayed:
+Filter the amount of results displayed:  
+(Must be between 1-100).
 
 ```bash
 libgen search kubernetes -r 5
@@ -75,6 +76,13 @@ below for an example:
 
 ```bash
 libgen download-all kubernetes
+```
+
+Specify the desired amount of results downloaded:  
+(Must be between 1-100).
+
+```bash
+libgen download-all kubernetes -r 50
 ```
 
 Specify an output path:

@@ -28,9 +28,10 @@ var mirrorSwitch string
 
 // statusCmd represents the status command
 var statusCmd = &cobra.Command{
-	Use:   "status",
-	Short: "Checks the status of Library Genesis' mirrors.",
-	Long:  ``,
+	Use:     "status",
+	Short:   "Checks the status of Library Genesis' mirrors.",
+	Long:    `Checks the status of all Library Genesis search mirrors as well as all download mirrors.`,
+	Example: `libgen status`,
 	Run: func(cmd *cobra.Command, args []string) {
 		switch mirrorSwitch {
 		case "download":
@@ -73,6 +74,6 @@ var statusCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(statusCmd)
-	statusCmd.Flags().StringVarP(&mirrorSwitch, "mirror", "m", "", "")
+	statusCmd.Flags().StringVarP(&mirrorSwitch, "mirror", "m", "", "Choose a specific "+
+		"collection of mirrors to check status.")
 }

@@ -30,7 +30,7 @@ var downloadOutput string
 var downloadCmd = &cobra.Command{
 	Use:     "download",
 	Short:   "Download a specific resource by hash.",
-	Long:    ``,
+	Long:    `Use this command if you already know the hash of the specific resource you'd like to download.'`,
 	Example: "libgen download 2F2DBA2A621B693BB95601C16ED680F8",
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -41,23 +41,32 @@ var downloadCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
-		book, err := libgen.GetDetails(args, libgen.GetWorkingMirror(libgen.SearchMirrors), true, false, "")
+		book, err := libgen.GetDetails(
+			args,
+			libgen.GetWorkingMirror(libgen.SearchMirrors),
+			true,
+			false,
+			"",
+		)
 		if err != nil {
 			log.Fatalf("error retrieving results from LibGen API: %v", err)
 		}
 
 		fmt.Printf("Download started for: %s by %s\n", book[0].Title, book[0].Author)
 
+		if err := libgen.GetDownloadURL(&book[0]); err != nil {
+			log.Println(err)
+		}
 		if err := libgen.DownloadBook(book[0], downloadOutput); err != nil {
 			log.Fatalf("error downloading %v: %v", book[0].Title, err)
 		}
 
-		fmt.Printf("%s %s", color.GreenString("[OK]"), book[0].Title+book[0].Extension)
+		fmt.Printf("\n%s %s by %s.%s\n", color.GreenString("[OK]"),
+			book[0].Title, book[0].Author, book[0].Extension)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(downloadCmd)
 	downloadCmd.Flags().StringVarP(&downloadOutput, "output", "o", "", "where you want "+
 		"libgen-cli to save your download.")
 }
