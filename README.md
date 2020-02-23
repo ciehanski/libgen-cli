@@ -128,6 +128,14 @@ Specify to only check the status of the search mirrors:
 libgen status -m search
 ```
 
+#### Version:
+
+Check the version of the installed libgen-cli client:
+
+```bash
+libgen -v
+```
+
 ## License
 - Apache License 2.0
 
