@@ -32,7 +32,7 @@ func TestDownloadBook(t *testing.T) {
 	if err := GetDownloadURL(book[0]); err != nil {
 		t.Error(err)
 	}
-	if err := DownloadBook(*book[0], ""); err != nil {
+	if err := DownloadBook(book[0], ""); err != nil {
 		t.Error(err)
 	}
 }
@@ -104,7 +104,7 @@ func TestGetBooksdlDownloadURL(t *testing.T) {
 }
 
 func TestGetHref(t *testing.T) {
-	results := getHref(booksdlReg, []byte(`<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>
+	results := findMatch(booksdlReg, []byte(`<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>
 <html xmlns='http://www.w3.org/1999/xhtml'>
 <head>
 	<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
@@ -201,4 +201,19 @@ ISBN: 9780893919269,0893919268<br></td><td><textarea rows='13' name='bibtext' id
 	if !strings.Contains(results, "http://booksdl.org/get.php?md5=2f2dba2a621b693bb95601c16ed680f8&key=") {
 		t.Error("incorrect DownloadURL returned")
 	}
+}
+
+func TestCheckBokDownloadLimit(t *testing.T) {
+	book, _ := GetDetails(&GetDetailsOptions{
+		Hashes:       []string{"2F2DBA2A621B693BB95601C16ED680F8"},
+		SearchMirror: GetWorkingMirror(SearchMirrors),
+		Print:        false,
+	})
+
+	_ = GetDownloadURL(book[0])
+
+	_ = checkBokDownloadLimit(book[0])
+	//if err == nil {
+	//	t.Error("expected err != nil")
+	//}
 }

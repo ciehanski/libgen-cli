@@ -16,16 +16,13 @@ package libgen_cli
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"regexp"
 	"runtime"
 	"strings"
 
-	"github.com/cheggaaa/pb/v3"
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -33,14 +30,28 @@ import (
 	"github.com/ciehanski/libgen-cli/libgen"
 )
 
-var dbdumpsOutput string
-
 var dbdumpsCmd = &cobra.Command{
 	Use:     "dbdumps",
 	Short:   "Allows users to download any selection of Library Genesis' database dumps.",
 	Long:    `A collection of Library Genesis' compressed SQL database dumps can be downloaded using this command.`,
 	Example: "libgen dbdumps",
 	Run: func(cmd *cobra.Command, args []string) {
+
+		// Don't allow args
+		if len(args) != 0 {
+			if err := cmd.Help(); err != nil {
+				fmt.Printf("error displaying CLI help: %v\n", err)
+			}
+			os.Exit(1)
+		}
+
+		// Get flags
+		output, err := cmd.Flags().GetString("output")
+		if err != nil {
+			fmt.Printf("error getting output flag: %v\n", err)
+		}
+
+		fmt.Println("++ Getting all database dumps")
 
 		mirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
 
@@ -54,13 +65,13 @@ var dbdumpsCmd = &cobra.Command{
 			log.Fatalf("error reading response: %v", err)
 		}
 
-		dbdumps := parseDbdumps(string(b))
+		dbdumps := libgen.ParseDbdumps(string(b))
 		if dbdumps == nil {
 			log.Fatal("error parsing dbdumps. No dbdumps found.")
 		}
 		if len(dbdumps) == 0 {
 			fmt.Print("\nNo results found.\n")
-			os.Exit(0)
+			os.Exit(1)
 		}
 
 		promptTemplate := &promptui.SelectTemplates{
@@ -80,7 +91,7 @@ var dbdumpsCmd = &cobra.Command{
 		_, result, err := prompt.Run()
 		if err != nil {
 			fmt.Print(err)
-			os.Exit(0)
+			os.Exit(1)
 		}
 
 		var selectedDbDump string
@@ -91,9 +102,9 @@ var dbdumpsCmd = &cobra.Command{
 			}
 		}
 
-		fmt.Printf("Download started for: %s\n", selectedDbDump)
+		fmt.Printf("Download started for: %s\n", libgen.RemoveQuotes(selectedDbDump))
 
-		if err := downloadDbDump(selectedDbDump); err != nil {
+		if err := libgen.DownloadDbdump(selectedDbDump, output); err != nil {
 			log.Fatalf("error download dbdump: %v", err)
 		}
 
@@ -108,67 +119,7 @@ var dbdumpsCmd = &cobra.Command{
 	},
 }
 
-func downloadDbDump(filename string) error {
-	filename = removeQuotes(filename)
-	r, err := http.Get(fmt.Sprintf("http://gen.lib.rus.ec/dbdumps/%s", filename))
-	if err != nil {
-		return err
-	}
-
-	if r.StatusCode == http.StatusOK {
-		filesize := r.ContentLength
-		bar := pb.Full.Start64(filesize)
-
-		wd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		out, err := os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
-		if err != nil {
-			return err
-		}
-
-		_, err = io.Copy(out, bar.NewProxyReader(r.Body))
-		if err != nil {
-			return err
-		}
-
-		bar.Finish()
-
-		if err := out.Close(); err != nil {
-			return err
-		}
-		if err := r.Body.Close(); err != nil {
-			return err
-		}
-	} else {
-		return fmt.Errorf("unable to reach mirror: HTTP %v", r.StatusCode)
-	}
-
-	return nil
-}
-
-func parseDbdumps(response string) []string {
-	re := regexp.MustCompile(`(["])(.*?\.(rar|sql.gz))"`)
-	dbdumps := re.FindAllString(response, -1)
-
-	for _, dbdump := range dbdumps {
-		dbdump = removeQuotes(dbdump)
-	}
-
-	return dbdumps
-}
-
-func removeQuotes(s string) string {
-	if s == "" {
-		return ""
-	}
-	s = s[1:]
-	s = s[:len(s)-1]
-	return s
-}
-
 func init() {
-	dbdumpsCmd.Flags().StringVarP(&dbdumpsOutput, "output", "o", "", "where you want "+
+	dbdumpsCmd.Flags().StringP("output", "o", "", "where you want "+
 		"libgen-cli to save your download.")
 }

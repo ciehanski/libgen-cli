@@ -15,7 +15,6 @@
 package libgen
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -1237,7 +1236,6 @@ func TestParseResponse(t *testing.T) {
 		t.Error(err)
 	}
 	if book.Md5 != "2f2dba2a621b693bb95601c16ed680f8" {
-		fmt.Println(book.Md5)
 		t.Error("incorrect MD5")
 	}
 	if book.Author != "Larry J. Crockett" {

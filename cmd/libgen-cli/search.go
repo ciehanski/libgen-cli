@@ -30,15 +30,6 @@ import (
 	"github.com/ciehanski/libgen-cli/libgen"
 )
 
-// Search command flags
-var (
-	//mediaType string
-	resultsFlag   int
-	requireAuthor bool
-	extension     string
-	searchOutput  string
-)
-
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
 	Use:     "search",
@@ -51,7 +42,25 @@ var searchCmd = &cobra.Command{
 			if err := cmd.Help(); err != nil {
 				fmt.Printf("error displaying CLI help: %v\n", err)
 			}
-			os.Exit(0)
+			os.Exit(1)
+		}
+
+		// Get flags
+		results, err := cmd.Flags().GetInt("results")
+		if err != nil {
+			fmt.Printf("error getting results flag: %v\n", err)
+		}
+		requireAuthor, err := cmd.Flags().GetBool("require-author")
+		if err != nil {
+			fmt.Printf("error getting require-author flag: %v\n", err)
+		}
+		extension, err := cmd.Flags().GetString("extension")
+		if err != nil {
+			fmt.Printf("error getting extension flag: %v\n", err)
+		}
+		output, err := cmd.Flags().GetString("output")
+		if err != nil {
+			fmt.Printf("error getting output flag: %v\n", err)
 		}
 
 		// Join args for complete search query in case
@@ -60,21 +69,21 @@ var searchCmd = &cobra.Command{
 		fmt.Printf("++ Searching for: %s\n", searchQuery)
 
 		var books []*libgen.Book
-		books, err := libgen.Search(&libgen.SearchOptions{
+		books, err = libgen.Search(&libgen.SearchOptions{
 			Query:         searchQuery,
 			SearchMirror:  libgen.GetWorkingMirror(libgen.SearchMirrors),
-			Results:       resultsFlag,
+			Results:       results,
 			Print:         true,
 			RequireAuthor: requireAuthor,
 			Extension:     extension,
 		})
 		if err != nil {
 			fmt.Printf("error completing search query: %v\n", err)
-			os.Exit(0)
+			os.Exit(1)
 		}
 		if len(books) == 0 {
 			fmt.Print("\nNo results found.\n")
-			os.Exit(0)
+			os.Exit(1)
 		}
 
 		var pBookFormat string
@@ -116,7 +125,7 @@ var searchCmd = &cobra.Command{
 			Label:     "Select Book",
 			Items:     bookSelection,
 			Templates: promptTemplate,
-			Size:      resultsFlag,
+			Size:      results,
 		}
 
 		fmt.Println(strings.Repeat("-", 80))
@@ -124,7 +133,7 @@ var searchCmd = &cobra.Command{
 		_, result, err := prompt.Run()
 		if err != nil {
 			fmt.Print(err)
-			os.Exit(0)
+			os.Exit(1)
 		}
 
 		var selectedBook libgen.Book
@@ -143,12 +152,11 @@ var searchCmd = &cobra.Command{
 
 		if err := libgen.GetDownloadURL(&selectedBook); err != nil {
 			fmt.Println(err)
-			os.Exit(0)
+			os.Exit(1)
 		}
-		fmt.Println(selectedBook.DownloadURL)
-		if err := libgen.DownloadBook(selectedBook, searchOutput); err != nil {
+		if err := libgen.DownloadBook(&selectedBook, output); err != nil {
 			fmt.Printf("error downloading %v: %v\n", selectedBook.Title, err)
-			os.Exit(0)
+			os.Exit(1)
 		}
 
 		if runtime.GOOS == "windows" {
@@ -165,14 +173,14 @@ var searchCmd = &cobra.Command{
 }
 
 func init() {
-	//searchCmd.Flags().StringVarP(&mediaType, "media", "m", "libgen", "controls what "+
+	//searchCmd.Flags().StringP("media", "m", "libgen", "controls what "+
 	//	"type of media will be queried for. Ex: fiction, comics, scientific papers, etc.")
-	searchCmd.Flags().IntVarP(&resultsFlag, "results", "r", 10, "controls how many "+
+	searchCmd.Flags().IntP("results", "r", 10, "controls how many "+
 		"query results are displayed.")
-	searchCmd.Flags().BoolVarP(&requireAuthor, "require-author", "a", false, "controls "+
+	searchCmd.Flags().BoolP("require-author", "a", false, "controls "+
 		"if the query results will return any media without a listed author.")
-	searchCmd.Flags().StringVarP(&extension, "ext", "e", "", "controls if the query "+
+	searchCmd.Flags().StringP("extension", "e", "", "controls if the query "+
 		"results will return any media with a certain file extension.")
-	searchCmd.Flags().StringVarP(&searchOutput, "output", "o", "", "where you want "+
+	searchCmd.Flags().StringP("output", "o", "", "where you want "+
 		"libgen-cli to save your download.")
 }

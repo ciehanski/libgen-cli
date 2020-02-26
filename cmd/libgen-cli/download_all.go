@@ -27,9 +27,6 @@ import (
 	"github.com/ciehanski/libgen-cli/libgen"
 )
 
-var downloadAllOutput string
-var downloadAllResults int
-
 var downloadAllCmd = &cobra.Command{
 	Use:     "download-all",
 	Short:   "Downloads all found resources for a specified query.",
@@ -41,7 +38,17 @@ var downloadAllCmd = &cobra.Command{
 			if err := cmd.Help(); err != nil {
 				fmt.Printf("error displaying CLI help: %v\n", err)
 			}
-			os.Exit(0)
+			os.Exit(1)
+		}
+
+		// Get flags
+		output, err := cmd.Flags().GetString("output")
+		if err != nil {
+			fmt.Printf("error getting output flag: %v\n", err)
+		}
+		results, err := cmd.Flags().GetInt("results")
+		if err != nil {
+			fmt.Printf("error getting results flag: %v\n", err)
 		}
 
 		// Join args for complete search query in case
@@ -52,7 +59,7 @@ var downloadAllCmd = &cobra.Command{
 		books, err := libgen.Search(&libgen.SearchOptions{
 			Query:        searchQuery,
 			SearchMirror: libgen.GetWorkingMirror(libgen.SearchMirrors),
-			Results:      downloadAllResults,
+			Results:      results,
 		})
 		if err != nil {
 			fmt.Printf("error completing search query: %v\n", err)
@@ -65,10 +72,9 @@ var downloadAllCmd = &cobra.Command{
 				fmt.Printf("error getting download DownloadURL: %v\n", err)
 				continue
 			}
-			fmt.Println(book.DownloadURL)
 			wg.Add(1)
 			go func() {
-				if err := libgen.DownloadBook(*book, downloadAllOutput); err != nil {
+				if err := libgen.DownloadBook(book, output); err != nil {
 					fmt.Printf("error downloading %v: %v\n", book.Title, err)
 				}
 				wg.Done()
@@ -88,8 +94,8 @@ var downloadAllCmd = &cobra.Command{
 }
 
 func init() {
-	downloadAllCmd.Flags().StringVarP(&downloadAllOutput, "output", "o", "", "where "+
+	downloadAllCmd.Flags().StringP("output", "o", "", "where "+
 		"you want libgen-cli to save your download.")
-	downloadAllCmd.Flags().IntVarP(&downloadAllResults, "results", "r", 10, "controls "+
+	downloadAllCmd.Flags().IntP("results", "r", 10, "controls "+
 		"how many query results are displayed.")
 }

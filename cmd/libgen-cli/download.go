@@ -26,8 +26,6 @@ import (
 	"github.com/ciehanski/libgen-cli/libgen"
 )
 
-var downloadOutput string
-
 var downloadCmd = &cobra.Command{
 	Use:     "download",
 	Short:   "Download a specific resource by hash.",
@@ -35,16 +33,23 @@ var downloadCmd = &cobra.Command{
 	Example: "libgen download 2F2DBA2A621B693BB95601C16ED680F8",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if len(args) < 1 {
+		if len(args) != 1 {
 			if err := cmd.Help(); err != nil {
 				fmt.Printf("error displaying CLI help: %v\n", err)
 			}
-			os.Exit(0)
+			os.Exit(1)
 		}
+		// Ensure provided entry is valid MD5 hash
 		re := regexp.MustCompile(libgen.SearchMD5)
 		if !re.MatchString(args[0]) {
 			fmt.Printf("\nPlease provide a valid MD5 hash\n")
-			os.Exit(0)
+			os.Exit(1)
+		}
+
+		// Get flags
+		output, err := cmd.Flags().GetString("output")
+		if err != nil {
+			fmt.Printf("error getting output flag: %v\n", err)
 		}
 
 		bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
@@ -61,11 +66,11 @@ var downloadCmd = &cobra.Command{
 
 		if err := libgen.GetDownloadURL(book); err != nil {
 			fmt.Printf("error getting download URL: %v\n", err)
-			os.Exit(0)
+			os.Exit(1)
 		}
-		if err := libgen.DownloadBook(*book, downloadOutput); err != nil {
+		if err := libgen.DownloadBook(book, output); err != nil {
 			fmt.Printf("error downloading %v: %v\n", book.Title, err)
-			os.Exit(0)
+			os.Exit(1)
 		}
 
 		if runtime.GOOS == "windows" {
@@ -82,6 +87,6 @@ var downloadCmd = &cobra.Command{
 }
 
 func init() {
-	downloadCmd.Flags().StringVarP(&downloadOutput, "output", "o", "", "where you want "+
+	downloadCmd.Flags().StringP("output", "o", "", "where you want "+
 		"libgen-cli to save your download.")
 }

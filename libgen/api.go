@@ -232,6 +232,17 @@ func GetWorkingMirror(urls []url.URL) url.URL {
 	return mirror
 }
 
+func ParseDbdumps(response string) []string {
+	re := regexp.MustCompile(`(["])(.*?\.(rar|sql.gz))"`)
+	dbdumps := re.FindAllString(response, -1)
+
+	for _, dbdump := range dbdumps {
+		dbdump = RemoveQuotes(dbdump)
+	}
+
+	return dbdumps
+}
+
 // parseHashes takes in a HTTP response and scans it for
 // an MD5 hash and then returns the found hashes.
 func parseHashes(response string, results int) []string {
@@ -328,4 +339,13 @@ func prettify(key string, value string, col color.Attribute, align string) error
 		fmt.Printf(a, s)
 	}
 	return nil
+}
+
+func RemoveQuotes(s string) string {
+	if s == "" {
+		return ""
+	}
+	s = s[1:]
+	s = s[:len(s)-1]
+	return s
 }

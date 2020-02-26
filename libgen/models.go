@@ -30,7 +30,7 @@ const (
 	JSONQuery         = "id,title,author,filesize,Extension,md5,year"
 	TitleMaxLength    = 65
 	AuthorMaxLength   = 25
-	httpClientTimeout = time.Second * 5
+	httpClientTimeout = time.Second * 6
 )
 
 // Book is the struct of resources on Library Genesis.
@@ -58,8 +58,12 @@ var SearchMirrors = []url.URL{
 		Host:   "libgen.is",
 	},
 	{
-		Scheme: "http",
+		Scheme: "https",
 		Host:   "libgen.unblockit.red",
+	},
+	{
+		Scheme: "http",
+		Host:   "libgen.unblockall.org",
 	},
 }
 
