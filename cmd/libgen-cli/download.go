@@ -16,12 +16,14 @@ package libgen_cli
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"regexp"
 	"runtime"
+	"strings"
+
+	"github.com/fatih/color"
+	"github.com/spf13/cobra"
 
 	"github.com/ciehanski/libgen-cli/libgen"
 )
@@ -52,6 +54,8 @@ var downloadCmd = &cobra.Command{
 			fmt.Printf("error getting output flag: %v\n", err)
 		}
 
+		fmt.Printf("++ Searching for: %s\n", args[0])
+
 		bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
 			Hashes:       args,
 			SearchMirror: libgen.GetWorkingMirror(libgen.SearchMirrors),
@@ -62,6 +66,7 @@ var downloadCmd = &cobra.Command{
 		}
 		book := bookDetails[0]
 
+		fmt.Println(strings.Repeat("-", 80))
 		fmt.Printf("Download started for: %s by %s\n", book.Title, book.Author)
 
 		if err := libgen.GetDownloadURL(book); err != nil {
@@ -78,6 +83,7 @@ var downloadCmd = &cobra.Command{
 				book.Title, book.Author, book.Extension)
 			if err != nil {
 				fmt.Printf("error writing to Windows os.Stdout: %v\n", err)
+				os.Exit(1)
 			}
 		} else {
 			fmt.Printf("\n%s %s by %s.%s\n", color.GreenString("[OK]"),
