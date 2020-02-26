@@ -16,16 +16,14 @@ package libgen_cli
 
 import (
 	"fmt"
+	"github.com/fatih/color"
+	"github.com/manifoldco/promptui"
+	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"runtime"
-	"strings"
-
-	"github.com/fatih/color"
-	"github.com/manifoldco/promptui"
-	"github.com/spf13/cobra"
 
 	"github.com/ciehanski/libgen-cli/libgen"
 )
@@ -86,8 +84,6 @@ var dbdumpsCmd = &cobra.Command{
 			Templates: promptTemplate,
 		}
 
-		fmt.Println(strings.Repeat("-", 80))
-
 		_, result, err := prompt.Run()
 		if err != nil {
 			fmt.Print(err)
@@ -120,6 +116,6 @@ var dbdumpsCmd = &cobra.Command{
 }
 
 func init() {
-	dbdumpsCmd.Flags().StringP("output", "o", "", "where you want "+
-		"libgen-cli to save your download.")
+	dbdumpsCmd.Flags().StringP("output", "o", "", "where you want libgen-cli to "+
+		"save your download.")
 }

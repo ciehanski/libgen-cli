@@ -78,6 +78,7 @@ var downloadAllCmd = &cobra.Command{
 		})
 		if err != nil {
 			fmt.Printf("error completing search query: %v\n", err)
+			os.Exit(1)
 		}
 
 		// TODO: fix; works outside of goroutine when run synchronously
@@ -101,6 +102,7 @@ var downloadAllCmd = &cobra.Command{
 			_, err = fmt.Fprintf(color.Output, "\n%s\n", color.GreenString("[DONE]"))
 			if err != nil {
 				fmt.Printf("error writing to Windows os.Stdout: %v\n", err)
+				os.Exit(1)
 			}
 		} else {
 			fmt.Printf("\n%s\n", color.GreenString("[DONE]"))
@@ -111,12 +113,12 @@ var downloadAllCmd = &cobra.Command{
 func init() {
 	downloadAllCmd.Flags().IntP("results", "r", 10, "controls "+
 		"how many query results are displayed.")
-	searchCmd.Flags().BoolP("require-author", "a", false, "controls "+
-		"if the query results will return any media without a listed author.")
-	searchCmd.Flags().StringP("extension", "e", "", "controls if the query "+
-		"results will return any media with a certain file extension.")
-	downloadAllCmd.Flags().StringP("output", "o", "", "where "+
-		"you want libgen-cli to save your download.")
+	downloadAllCmd.Flags().BoolP("require-author", "a", false, "controls if the query "+
+		"results will return any media without a listed author.")
+	downloadAllCmd.Flags().StringP("extension", "e", "", "controls if the query results "+
+		"will return any media with a certain file extension.")
+	downloadAllCmd.Flags().StringP("output", "o", "", "where you want libgen-cli to "+
+		"save your download.")
 	downloadAllCmd.Flags().IntP("year", "y", 0, "filters search query results by the "+
 		"year provided.")
 }

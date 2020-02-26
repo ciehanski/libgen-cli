@@ -1247,4 +1247,9 @@ func TestFormatTitle(t *testing.T) {
 	if formatTitle("testing123", TitleMaxLength) != "testing123" {
 		t.Error("incorrect output title")
 	}
+	if formatTitle("The Turing Test and the Frame Problem: AI's Mistaken Understanding of Intelligence",
+		TitleMaxLength) != "The Turing Test and the Frame Problem: AI's Mistaken Understanding of Intelligence...\n" {
+
+		t.Error("incorrect output title")
+	}
 }

@@ -27,8 +27,8 @@ const (
 	booksdlReg = "http://booksdl.org/get\\.php\\?md5=\\w{32}\\&key=\\w{16}"
 	bokReg     = `\/dl\/\d{6}\/\w{6}`
 	//libgenPwReg     = `http://libgen.pw/item/detail/id/\d*$`
-	JSONQuery         = "id,title,author,filesize,Extension,md5,year"
-	TitleMaxLength    = 65
+	JSONQuery         = "id,title,author,filesize,Extension,md5,year,language,pages,publisher,edition"
+	TitleMaxLength    = 68
 	AuthorMaxLength   = 25
 	httpClientTimeout = time.Second * 6
 )
@@ -42,6 +42,10 @@ type Book struct {
 	Extension   string
 	Md5         string
 	Year        string
+	Language    string
+	Pages       string
+	Publisher   string
+	Edition     string
 	DownloadURL string
 	PageURL     string
 }

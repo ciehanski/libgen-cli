@@ -300,6 +300,14 @@ func parseResponse(data []byte) (*Book, error) {
 					book.Md5 = v
 				case "year":
 					book.Year = v
+				case "language":
+					book.Language = v
+				case "pages":
+					book.Pages = v
+				case "publisher":
+					book.Publisher = v
+				case "edition":
+					book.Edition = v
 				}
 			}
 		}
