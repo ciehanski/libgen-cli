@@ -56,6 +56,12 @@ results:
 libgen search kubernetes -a
 ```
 
+Filter results by year:
+
+```bash
+libgen search kubernetes -y 2019
+```
+
 #### Download:
 
 The _download_ command will allow you to download a specific book if already 
