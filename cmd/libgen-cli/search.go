@@ -62,6 +62,10 @@ var searchCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("error getting output flag: %v\n", err)
 		}
+		year, err := cmd.Flags().GetInt("year")
+		if err != nil {
+			fmt.Printf("error getting output flag: %v\n", err)
+		}
 
 		// Join args for complete search query in case
 		// it contains spaces
@@ -76,6 +80,7 @@ var searchCmd = &cobra.Command{
 			Print:         true,
 			RequireAuthor: requireAuthor,
 			Extension:     extension,
+			Year:          year,
 		})
 		if err != nil {
 			fmt.Printf("error completing search query: %v\n", err)
@@ -183,4 +188,6 @@ func init() {
 		"results will return any media with a certain file extension.")
 	searchCmd.Flags().StringP("output", "o", "", "where you want "+
 		"libgen-cli to save your download.")
+	searchCmd.Flags().IntP("year", "y", 0, "filters search query results by the "+
+		"year provided.")
 }

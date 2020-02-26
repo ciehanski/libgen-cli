@@ -89,6 +89,7 @@ type SearchOptions struct {
 	Print         bool
 	RequireAuthor bool
 	Extension     string
+	Year          int
 }
 
 // GetDetailsOptions are the optional parameters available for the GetDetails
@@ -99,4 +100,5 @@ type GetDetailsOptions struct {
 	Print         bool
 	RequireAuthor bool
 	Extension     string
+	Year          int
 }

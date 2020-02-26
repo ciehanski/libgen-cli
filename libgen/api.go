@@ -91,6 +91,7 @@ func Search(options *SearchOptions) ([]*Book, error) {
 		Print:         options.Print,
 		RequireAuthor: options.RequireAuthor,
 		Extension:     options.Extension,
+		Year:          options.Year,
 	})
 	if err != nil {
 		return nil, err
@@ -137,6 +138,15 @@ func GetDetails(options *GetDetailsOptions) ([]*Book, error) {
 		}
 		if options.Extension != "" && options.Extension != book.Extension {
 			continue
+		}
+		if options.Year != 0 {
+			y, err := strconv.Atoi(book.Year)
+			if err != nil {
+				return nil, err
+			}
+			if options.Year != y {
+				continue
+			}
 		}
 		if options.Print {
 			var fsize string

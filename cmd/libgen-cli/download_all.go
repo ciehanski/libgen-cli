@@ -42,13 +42,25 @@ var downloadAllCmd = &cobra.Command{
 		}
 
 		// Get flags
+		results, err := cmd.Flags().GetInt("results")
+		if err != nil {
+			fmt.Printf("error getting results flag: %v\n", err)
+		}
+		requireAuthor, err := cmd.Flags().GetBool("require-author")
+		if err != nil {
+			fmt.Printf("error getting require-author flag: %v\n", err)
+		}
+		extension, err := cmd.Flags().GetString("extension")
+		if err != nil {
+			fmt.Printf("error getting extension flag: %v\n", err)
+		}
 		output, err := cmd.Flags().GetString("output")
 		if err != nil {
 			fmt.Printf("error getting output flag: %v\n", err)
 		}
-		results, err := cmd.Flags().GetInt("results")
+		year, err := cmd.Flags().GetInt("year")
 		if err != nil {
-			fmt.Printf("error getting results flag: %v\n", err)
+			fmt.Printf("error getting output flag: %v\n", err)
 		}
 
 		// Join args for complete search query in case
@@ -57,9 +69,12 @@ var downloadAllCmd = &cobra.Command{
 		fmt.Printf("++ Downloading all for: %s\n", searchQuery)
 
 		books, err := libgen.Search(&libgen.SearchOptions{
-			Query:        searchQuery,
-			SearchMirror: libgen.GetWorkingMirror(libgen.SearchMirrors),
-			Results:      results,
+			Query:         searchQuery,
+			SearchMirror:  libgen.GetWorkingMirror(libgen.SearchMirrors),
+			Results:       results,
+			RequireAuthor: requireAuthor,
+			Extension:     extension,
+			Year:          year,
 		})
 		if err != nil {
 			fmt.Printf("error completing search query: %v\n", err)
@@ -94,8 +109,14 @@ var downloadAllCmd = &cobra.Command{
 }
 
 func init() {
-	downloadAllCmd.Flags().StringP("output", "o", "", "where "+
-		"you want libgen-cli to save your download.")
 	downloadAllCmd.Flags().IntP("results", "r", 10, "controls "+
 		"how many query results are displayed.")
+	searchCmd.Flags().BoolP("require-author", "a", false, "controls "+
+		"if the query results will return any media without a listed author.")
+	searchCmd.Flags().StringP("extension", "e", "", "controls if the query "+
+		"results will return any media with a certain file extension.")
+	downloadAllCmd.Flags().StringP("output", "o", "", "where "+
+		"you want libgen-cli to save your download.")
+	downloadAllCmd.Flags().IntP("year", "y", 0, "filters search query results by the "+
+		"year provided.")
 }
