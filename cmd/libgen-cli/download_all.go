@@ -16,8 +16,8 @@ package libgen_cli
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -39,44 +39,51 @@ var downloadAllCmd = &cobra.Command{
 
 		if len(args) < 1 {
 			if err := cmd.Help(); err != nil {
-				log.Fatal(err)
+				fmt.Printf("error displaying CLI help: %v\n", err)
 			}
 			os.Exit(0)
 		}
 
+		// Join args for complete search query in case
+		// it contains spaces
 		searchQuery := strings.Join(args, " ")
-		fmt.Printf("++ Searching for: %s\n", searchQuery)
+		fmt.Printf("++ Downloading all for: %s\n", searchQuery)
 
-		books, err := libgen.Search(
-			searchQuery,
-			libgen.GetWorkingMirror(libgen.SearchMirrors),
-			downloadAllResults,
-			false,
-			false,
-			"",
-		)
+		books, err := libgen.Search(&libgen.SearchOptions{
+			Query:        searchQuery,
+			SearchMirror: libgen.GetWorkingMirror(libgen.SearchMirrors),
+			Results:      downloadAllResults,
+		})
 		if err != nil {
-			log.Fatalf("error completing search query: %v", err)
+			fmt.Printf("error completing search query: %v\n", err)
 		}
 
 		// TODO: fix; works outside of goroutine when run synchronously
 		var wg sync.WaitGroup
 		for _, book := range books {
-			wg.Add(1)
-			if err := libgen.GetDownloadURL(&book); err != nil {
-				log.Println(err)
+			if err := libgen.GetDownloadURL(book); err != nil {
+				fmt.Printf("error getting download DownloadURL: %v\n", err)
 				continue
 			}
+			fmt.Println(book.DownloadURL)
+			wg.Add(1)
 			go func() {
-				defer wg.Done()
-				if err := libgen.DownloadBook(book, downloadAllOutput); err != nil {
+				if err := libgen.DownloadBook(*book, downloadAllOutput); err != nil {
 					fmt.Printf("error downloading %v: %v\n", book.Title, err)
 				}
+				wg.Done()
 			}()
 		}
 		wg.Wait()
 
-		fmt.Printf("\n%s\n", color.GreenString("[OK]"))
+		if runtime.GOOS == "windows" {
+			_, err = fmt.Fprintf(color.Output, "\n%s\n", color.GreenString("[DONE]"))
+			if err != nil {
+				fmt.Printf("error writing to Windows os.Stdout: %v\n", err)
+			}
+		} else {
+			fmt.Printf("\n%s\n", color.GreenString("[DONE]"))
+		}
 	},
 }
 

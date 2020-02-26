@@ -17,10 +17,12 @@ package libgen_cli
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"runtime"
+	"strconv"
 	"strings"
 
+	"github.com/dustin/go-humanize"
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -28,6 +30,7 @@ import (
 	"github.com/ciehanski/libgen-cli/libgen"
 )
 
+// Search command flags
 var (
 	//mediaType string
 	resultsFlag   int
@@ -43,48 +46,63 @@ var searchCmd = &cobra.Command{
 	Long:    `Searches for all resources that result from the provided query and then provides them for download.`,
 	Example: "libgen search kubernetes",
 	Run: func(cmd *cobra.Command, args []string) {
-		var (
-			books         []libgen.Book
-			bookSelection []string
-			pBookFormat   string
-			selectedBook  libgen.Book
-		)
 
 		if len(args) < 1 {
 			if err := cmd.Help(); err != nil {
-				log.Fatal(err)
+				fmt.Printf("error displaying CLI help: %v\n", err)
 			}
 			os.Exit(0)
 		}
 
+		// Join args for complete search query in case
+		// it contains spaces
 		searchQuery := strings.Join(args, " ")
 		fmt.Printf("++ Searching for: %s\n", searchQuery)
 
-		books, err := libgen.Search(
-			searchQuery,
-			libgen.GetWorkingMirror(libgen.SearchMirrors),
-			resultsFlag,
-			true,
-			requireAuthor,
-			extension,
-		)
+		var books []*libgen.Book
+		books, err := libgen.Search(&libgen.SearchOptions{
+			Query:         searchQuery,
+			SearchMirror:  libgen.GetWorkingMirror(libgen.SearchMirrors),
+			Results:       resultsFlag,
+			Print:         true,
+			RequireAuthor: requireAuthor,
+			Extension:     extension,
+		})
 		if err != nil {
-			log.Fatalf("error completing search query: %v", err)
+			fmt.Printf("error completing search query: %v\n", err)
+			os.Exit(0)
 		}
 		if len(books) == 0 {
 			fmt.Print("\nNo results found.\n")
 			os.Exit(0)
 		}
 
+		var pBookFormat string
+		var bookSelection []string
 		for _, b := range books {
 			selectChoice := fmt.Sprintf("%8s ", color.New(color.FgHiBlue).Sprintf(b.ID))
-			selectChoice += fmt.Sprintf("%-4s ", color.New(color.FgRed).Sprintf(b.Extension))
-			if len(b.Title) > libgen.TitleMaxLength {
-				pBookFormat = b.Title[:libgen.TitleMaxLength]
+			if len(b.Title) > 36 {
+				pBookFormat = b.Title[:36] + "... by"
 			} else {
-				pBookFormat = b.Title
+				pBookFormat = b.Title + " by"
 			}
-			selectChoice += fmt.Sprintf("%s", pBookFormat)
+			selectChoice += fmt.Sprintf("%s ", pBookFormat)
+			if b.Author != "" {
+				if len(b.Author) > 20 {
+					selectChoice += fmt.Sprintf("%s ", color.New(color.FgYellow).Sprintf(b.Author[:17]+"..."))
+				} else {
+					selectChoice += fmt.Sprintf("%s ", color.New(color.FgYellow).Sprintf(b.Author))
+				}
+			} else {
+				selectChoice += fmt.Sprintf("%s ", color.New(color.FgYellow).Sprintf("N/A"))
+			}
+			selectChoice += fmt.Sprintf("| %-4s ", color.New(color.FgRed).Sprintf(b.Extension))
+			size, err := strconv.Atoi(b.Filesize)
+			if err != nil {
+				fmt.Printf("error converting string to int: %v\n", err)
+				os.Exit(0)
+			}
+			selectChoice += fmt.Sprintf("| %v", color.New(color.FgGreen).Sprintf(humanize.Bytes(uint64(size))))
 			bookSelection = append(bookSelection, selectChoice)
 		}
 
@@ -109,24 +127,40 @@ var searchCmd = &cobra.Command{
 			os.Exit(0)
 		}
 
+		var selectedBook libgen.Book
 		for i, b := range bookSelection {
 			if b == result {
-				selectedBook = books[i]
+				selectedBook = *books[i]
 				break
 			}
 		}
 
-		fmt.Printf("Download started for: %s by %s\n", selectedBook.Title, selectedBook.Author)
+		if selectedBook.Author == "" {
+			fmt.Printf("Download started for: %s by N/A\n", selectedBook.Title)
+		} else {
+			fmt.Printf("Download started for: %s by %s\n", selectedBook.Title, selectedBook.Author)
+		}
 
 		if err := libgen.GetDownloadURL(&selectedBook); err != nil {
-			log.Fatalf("error retrieving valid download URL: %v", err)
+			fmt.Println(err)
+			os.Exit(0)
 		}
+		fmt.Println(selectedBook.DownloadURL)
 		if err := libgen.DownloadBook(selectedBook, searchOutput); err != nil {
-			log.Fatalf("error downloading %v: %v", selectedBook.Title, err)
+			fmt.Printf("error downloading %v: %v\n", selectedBook.Title, err)
+			os.Exit(0)
 		}
 
-		fmt.Printf("\n%s %s by %s.%s\n", color.GreenString("[OK]"),
-			selectedBook.Title, selectedBook.Author, selectedBook.Extension)
+		if runtime.GOOS == "windows" {
+			_, err = fmt.Fprintf(color.Output, "\n%s %s by %s.%s", color.GreenString("[OK]"),
+				selectedBook.Title, selectedBook.Author, selectedBook.Extension)
+			if err != nil {
+				fmt.Printf("error writing to Windows os.Stdout: %v\n", err)
+			}
+		} else {
+			fmt.Printf("\n%s %s by %s.%s\n", color.GreenString("[OK]"),
+				selectedBook.Title, selectedBook.Author, selectedBook.Extension)
+		}
 	},
 }
 

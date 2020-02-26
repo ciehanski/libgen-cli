@@ -23,14 +23,11 @@ import (
 )
 
 func TestSearch(t *testing.T) {
-	results, err := Search(
-		"test",
-		GetWorkingMirror(SearchMirrors),
-		1,
-		false,
-		false,
-		"",
-	)
+	results, err := Search(&SearchOptions{
+		Query:        "test",
+		SearchMirror: GetWorkingMirror(SearchMirrors),
+		Results:      1,
+	})
 	if err != nil {
 		t.Error(err)
 	}
@@ -40,11 +37,11 @@ func TestSearch(t *testing.T) {
 }
 
 func TestGetDetails(t *testing.T) {
-	books, err := GetDetails([]string{"2F2DBA2A621B693BB95601C16ED680F8", "06E6135019C8F2F43158ABA9ABDC610E"},
-		GetWorkingMirror(SearchMirrors),
-		false,
-		false,
-		"")
+	books, err := GetDetails(&GetDetailsOptions{
+		Hashes:       []string{"2F2DBA2A621B693BB95601C16ED680F8", "06E6135019C8F2F43158ABA9ABDC610E"},
+		SearchMirror: GetWorkingMirror(SearchMirrors),
+		Print:        false,
+	})
 	if err != nil {
 		t.Error(err)
 	}
@@ -820,7 +817,7 @@ func TestParseHashes(t *testing.T) {
                     <option value='100'>100</option>
                 </select>
                 <br>
-                <b>View results:</b>
+                <b>View Results:</b>
                 <input type=radio name='view' checked value='simple'>
                 <label for='simple'>Simple</label>
                 <input type=radio name='view'    value='detailed'>
@@ -843,7 +840,7 @@ func TestParseHashes(t *testing.T) {
                 <input type='radio' name='column' value='language'><a href='' title='Russian, English, German, French, Spanish, ... etc. (ISO 639)'>Language</a>
                 <input type='radio' name='column' value='md5'>MD5
                 <input type='radio' name='column' value='tags'>Tags
-                <input type='radio' name='column' value='extension'>Extension
+                <input type='radio' name='column' value='Extension'>Extension
             </form></td><td><h1 style="color:#A00000"><a href="/">Library Genesis<sup style="font-size:65%">2M</sup></h1></a><br/><a href="https://wiki.mhut.org/software:libgen_desktop">Introducing Libgen Desktop application!</a><br><a href="http://custodians.online/">Letter of Solidarity</a></td></tr></table><div style="text-align: center; float: left;" class="paginator" id="paginator_example_top"></div>
 <script type="text/javascript">
     paginator_example_top = new Paginator(
@@ -854,16 +851,16 @@ func TestParseHashes(t *testing.T) {
         "search.php?&req=test&phrase=1&view=simple&column=def&sort=def&sortmode=ASC&page=" // url страниц
     );
 </script>
-<table width=100%><tr><td align='left' width=45%><font color=grey size=1>2780 files found , Showing the first  1000  results | showing results from 1 to 25</font></td><td align=center width=10%><font size="3" color="gray"><a href="search.php?&req=test&phrase=1&view=simple&column=def&sort=def&sortmode=ASC&page=2">&nbsp;&nbsp;&#9658;</a></font></td><td align='right' width=45%><font size=2>also search "test"  in   <a href='/foreignfiction/index.php?s=test&f_lang=All&f_columns=0&f_ext=All&f_group=1'>fiction</a></font></td></tr></table><table width=100% cellspacing=1 cellpadding=1 rules=rows class=c align=center><tr valign=top bgcolor=#C0C0C0>
-        <td><b><a title='Sort results by ID' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=id&sortmode=DESC'>ID</a></b></td>
-        <td><b><a title='Sort results by Author' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=author&sortmode=DESC'>Author(s)</a></b></td>
-        <td><b><a title='Sort results by Title' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=title&sortmode=DESC'>Title</a></b></td>
-        <td><b><a title='Sort results by Publisher' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=publisher&sortmode=DESC'>Publisher</a></b></td>
-        <td><b><a title='Sort results by Year' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=year&sortmode=DESC'>Year</a></b></td>
-        <td><b><a title='Sort results by Pages' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=pages&sortmode=DESC'>Pages</a></b></td>
-        <td><b><a title='Sort results by Language' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=language&sortmode=DESC'>Language</a></b></td>
-        <td><b><a title='Sort results by Size' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=filesize&sortmode=DESC'>Size</a></b></td>
-        <td><b><a title='Sort results by Extension' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=extension&sortmode=DESC'>Extension</a></b></td>
+<table width=100%><tr><td align='left' width=45%><font color=grey size=1>2780 files found , Showing the first  1000  Results | showing Results from 1 to 25</font></td><td align=center width=10%><font size="3" color="gray"><a href="search.php?&req=test&phrase=1&view=simple&column=def&sort=def&sortmode=ASC&page=2">&nbsp;&nbsp;&#9658;</a></font></td><td align='right' width=45%><font size=2>also search "test"  in   <a href='/foreignfiction/index.php?s=test&f_lang=All&f_columns=0&f_ext=All&f_group=1'>fiction</a></font></td></tr></table><table width=100% cellspacing=1 cellpadding=1 rules=rows class=c align=center><tr valign=top bgcolor=#C0C0C0>
+        <td><b><a title='Sort Results by ID' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=id&sortmode=DESC'>ID</a></b></td>
+        <td><b><a title='Sort Results by Author' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=author&sortmode=DESC'>Author(s)</a></b></td>
+        <td><b><a title='Sort Results by Title' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=title&sortmode=DESC'>Title</a></b></td>
+        <td><b><a title='Sort Results by Publisher' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=publisher&sortmode=DESC'>Publisher</a></b></td>
+        <td><b><a title='Sort Results by Year' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=year&sortmode=DESC'>Year</a></b></td>
+        <td><b><a title='Sort Results by Pages' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=pages&sortmode=DESC'>Pages</a></b></td>
+        <td><b><a title='Sort Results by Language' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=language&sortmode=DESC'>Language</a></b></td>
+        <td><b><a title='Sort Results by Size' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=filesize&sortmode=DESC'>Size</a></b></td>
+        <td><b><a title='Sort Results by Extension' href='search.php?&req=test&phrase=1&view=simple&column=def&sort=Extension&sortmode=DESC'>Extension</a></b></td>
         <td colspan=5><b>Mirrors</b></td>
         <td><b>Edit</b></td></tr><tr valign=top bgcolor=#C6DEFF><td>643</td>
         <td><a href='search.php?req=Larry J. Crockett&column[]=author'>Larry J. Crockett</a></td>
@@ -1245,5 +1242,11 @@ func TestParseResponse(t *testing.T) {
 	}
 	if book.Author != "Larry J. Crockett" {
 		t.Error("incorrect author")
+	}
+}
+
+func TestFormatTitle(t *testing.T) {
+	if formatTitle("testing123", TitleMaxLength) != "testing123" {
+		t.Error("incorrect output title")
 	}
 }

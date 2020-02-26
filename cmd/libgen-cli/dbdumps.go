@@ -22,12 +22,15 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+
+	"github.com/ciehanski/libgen-cli/libgen"
 )
 
 var dbdumpsOutput string
@@ -38,7 +41,10 @@ var dbdumpsCmd = &cobra.Command{
 	Long:    `A collection of Library Genesis' compressed SQL database dumps can be downloaded using this command.`,
 	Example: "libgen dbdumps",
 	Run: func(cmd *cobra.Command, args []string) {
-		r, err := http.Get("http://gen.lib.rus.ec/dbdumps/")
+
+		mirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
+
+		r, err := http.Get(mirror.String() + "/dbdumps/")
 		if err != nil {
 			log.Fatalf("error reaching mirror: %v", err)
 		}
@@ -91,7 +97,14 @@ var dbdumpsCmd = &cobra.Command{
 			log.Fatalf("error download dbdump: %v", err)
 		}
 
-		fmt.Printf("\n%s %s\n", color.GreenString("[OK]"), selectedDbDump)
+		if runtime.GOOS == "windows" {
+			_, err = fmt.Fprintf(color.Output, "\n%s %s\n", color.GreenString("[OK]"), selectedDbDump)
+			if err != nil {
+				fmt.Printf("error writing to Windows os.Stdout: %v\n", err)
+			}
+		} else {
+			fmt.Printf("\n%s %s\n", color.GreenString("[OK]"), selectedDbDump)
+		}
 	},
 }
 
@@ -147,6 +160,9 @@ func parseDbdumps(response string) []string {
 }
 
 func removeQuotes(s string) string {
+	if s == "" {
+		return ""
+	}
 	s = s[1:]
 	s = s[:len(s)-1]
 	return s

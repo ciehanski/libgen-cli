@@ -18,6 +18,7 @@ package libgen
 import (
 	"errors"
 	"fmt"
+	"github.com/cheggaaa/pb/v3"
 	"io"
 	"io/ioutil"
 	"log"
@@ -27,40 +28,36 @@ import (
 	"os"
 	"regexp"
 	"strings"
-
-	"github.com/cheggaaa/pb/v3"
 )
 
-// DownloadBook grabs the download URL for the book requested. First, it queries Booksdl.org and then
-// b-ok.cc for valid URL. Then, the download process is initiated with a progress bar displayed to
+// DownloadBook grabs the download DownloadURL for the book requested. First, it queries Booksdl.org and then
+// b-ok.cc for valid DownloadURL. Then, the download process is initiated with a progress bar displayed to
 // the user's CLI.
 func DownloadBook(book Book, output string) error {
 	var filesize int64
 	filename := getBookFilename(book)
 
-	if book.URL == "" {
-		if err := GetDownloadURL(&book); err != nil {
-			return err
-		}
+	req, err := http.NewRequest("GET", book.DownloadURL, nil)
+	if err != nil {
+		return err
 	}
-
-	//client := http.Client{Timeout: time.Second * 5}
-	r, err := http.Get(book.URL)
+	req.Header.Add("Accept-Encoding", "*")
+	if strings.Contains(book.PageURL, "b-ok.cc") {
+		req.Header.Add("Referer", book.PageURL)
+	}
+	r, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
 
 	if r.StatusCode == http.StatusOK {
-		var (
-			out *os.File
-			err error
-		)
 		filesize = r.ContentLength
 		bar := pb.Full.Start64(filesize)
 
 		// check if output folder was provided. If not, create
 		// one at the current directory called "libgen."
 		var osErr error
+		var out *os.File
 		if output == "" {
 			wd, err := os.Getwd()
 			if err != nil {
@@ -69,7 +66,7 @@ func DownloadBook(book Book, output string) error {
 			if stat, err := os.Stat(fmt.Sprintf("%s/libgen", wd)); err == nil && stat.IsDir() {
 				out, osErr = os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
 			} else {
-				if err := os.Mkdir(fmt.Sprintf("%s/libgen", wd), 0700); err != nil {
+				if err := os.Mkdir(fmt.Sprintf("%s/libgen", wd), 0755); err != nil {
 					return err
 				}
 				out, osErr = os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
@@ -115,22 +112,21 @@ func GetDownloadURL(book *Book) error {
 	switch chosenMirror.String() {
 	case "http://booksdl.org":
 		if err := getBooksdlDownloadURL(book); err != nil {
-			if err := getBokDownloadURL(book); err != nil {
+			if err = getBokDownloadURL(book); err != nil {
 				return err
 			}
 		}
 	case "https://b-ok.cc":
 		if err := getBokDownloadURL(book); err != nil {
-			if err := getBooksdlDownloadURL(book); err != nil {
+			if err = getBooksdlDownloadURL(book); err != nil {
 				return err
 			}
 		}
 	}
 
-	if book.URL == "" {
+	if book.DownloadURL == "" {
 		return fmt.Errorf("unable to retrieve download link for desired resource")
 	}
-
 	return nil
 }
 
@@ -140,17 +136,17 @@ func getBooksdlDownloadURL(book *Book) error {
 		Host:   "libgen.lc",
 		Path:   "ads.php",
 	}
-
 	q := baseURL.Query()
 	q.Set("md5", book.Md5)
 	baseURL.RawQuery = q.Encode()
+	book.PageURL = baseURL.String()
 
-	r, err := http.Get(baseURL.String())
+	client := http.Client{Timeout: httpClientTimeout}
+	r, err := client.Get(baseURL.String())
 	if err != nil {
 		log.Printf("http.Get(%q) error: %v", baseURL, err)
 		return err
 	}
-
 	if r.StatusCode != http.StatusOK {
 		return fmt.Errorf("unable to connect to mirror: %v", r.StatusCode)
 	}
@@ -159,7 +155,8 @@ func getBooksdlDownloadURL(book *Book) error {
 	if err != nil {
 		return err
 	}
-	book.URL = getHref(booksdlReg, string(b))
+
+	book.DownloadURL = getHref(booksdlReg, b)
 
 	if err := r.Body.Close(); err != nil {
 		return err
@@ -174,39 +171,41 @@ func getBokDownloadURL(book *Book) error {
 		Host:   "b-ok.cc",
 		Path:   "md5/",
 	}
-
 	queryURL := baseURL.String() + book.Md5
+	book.PageURL = queryURL
 
-	r, err := http.Get(queryURL)
+	client := http.Client{Timeout: httpClientTimeout}
+	resp, err := client.Get(queryURL)
 	if err != nil {
 		return err
 	}
 
-	if r.StatusCode != http.StatusOK {
-		return fmt.Errorf("unable to connect to mirror: %v", r.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unable to connect to mirror: %v", resp.StatusCode)
 	}
 
-	b, err := ioutil.ReadAll(r.Body)
+	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	downloadURL := getHref(bokReg, string(b))
+	downloadURL := getHref(bokReg, b)
 	if downloadURL == "" {
-		return errors.New("no valid download URL found")
+		return errors.New("no valid download DownloadURL found")
 	}
-	book.URL = "https://b-ok.cc" + downloadURL
 
-	if err := r.Body.Close(); err != nil {
+	book.DownloadURL = "https://b-ok.cc" + downloadURL
+
+	if err := resp.Body.Close(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func getHref(reg string, response string) string {
+func getHref(reg string, response []byte) string {
 	re := regexp.MustCompile(reg)
-	matches := re.FindAllString(response, -1)
+	matches := re.FindAllString(string(response), -1)
 
 	if len(matches) > 0 {
 		return matches[0]

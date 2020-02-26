@@ -16,11 +16,12 @@ package libgen_cli
 
 import (
 	"fmt"
-	"log"
-	"os"
-
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"log"
+	"os"
+	"regexp"
+	"runtime"
 
 	"github.com/ciehanski/libgen-cli/libgen"
 )
@@ -36,33 +37,47 @@ var downloadCmd = &cobra.Command{
 
 		if len(args) < 1 {
 			if err := cmd.Help(); err != nil {
-				log.Fatal(err)
+				fmt.Printf("error displaying CLI help: %v\n", err)
 			}
 			os.Exit(0)
 		}
+		re := regexp.MustCompile(libgen.SearchMD5)
+		if !re.MatchString(args[0]) {
+			fmt.Printf("\nPlease provide a valid MD5 hash\n")
+			os.Exit(0)
+		}
 
-		book, err := libgen.GetDetails(
-			args,
-			libgen.GetWorkingMirror(libgen.SearchMirrors),
-			true,
-			false,
-			"",
-		)
+		bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
+			Hashes:       args,
+			SearchMirror: libgen.GetWorkingMirror(libgen.SearchMirrors),
+			Print:        true,
+		})
 		if err != nil {
 			log.Fatalf("error retrieving results from LibGen API: %v", err)
 		}
+		book := bookDetails[0]
 
-		fmt.Printf("Download started for: %s by %s\n", book[0].Title, book[0].Author)
+		fmt.Printf("Download started for: %s by %s\n", book.Title, book.Author)
 
-		if err := libgen.GetDownloadURL(&book[0]); err != nil {
-			log.Println(err)
+		if err := libgen.GetDownloadURL(book); err != nil {
+			fmt.Printf("error getting download URL: %v\n", err)
+			os.Exit(0)
 		}
-		if err := libgen.DownloadBook(book[0], downloadOutput); err != nil {
-			log.Fatalf("error downloading %v: %v", book[0].Title, err)
+		if err := libgen.DownloadBook(*book, downloadOutput); err != nil {
+			fmt.Printf("error downloading %v: %v\n", book.Title, err)
+			os.Exit(0)
 		}
 
-		fmt.Printf("\n%s %s by %s.%s\n", color.GreenString("[OK]"),
-			book[0].Title, book[0].Author, book[0].Extension)
+		if runtime.GOOS == "windows" {
+			_, err = fmt.Fprintf(color.Output, "\n%s %s by %s.%s", color.GreenString("[OK]"),
+				book.Title, book.Author, book.Extension)
+			if err != nil {
+				fmt.Printf("error writing to Windows os.Stdout: %v\n", err)
+			}
+		} else {
+			fmt.Printf("\n%s %s by %s.%s\n", color.GreenString("[OK]"),
+				book.Title, book.Author, book.Extension)
+		}
 	},
 }
 
