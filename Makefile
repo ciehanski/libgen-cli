@@ -1,5 +1,5 @@
 test:
-	go test ./...
+	GOCACHE=off go test ./...
 	rm -rf libgen/libgen
 build:
 	GOARCH=amd64 GOOS=darwin go build -o libgen-cli-darwin
