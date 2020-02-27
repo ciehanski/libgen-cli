@@ -81,22 +81,24 @@ var downloadAllCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// TODO: fix; works outside of goroutine when run synchronously
 		var wg sync.WaitGroup
+		bChan := make(chan *libgen.Book, results)
 		for _, book := range books {
 			if err := libgen.GetDownloadURL(book); err != nil {
 				fmt.Printf("error getting download DownloadURL: %v\n", err)
 				continue
 			}
 			wg.Add(1)
+			bChan <- book
 			go func() {
-				if err := libgen.DownloadBook(book, output); err != nil {
+				if err := libgen.DownloadBook(<-bChan, output); err != nil {
 					fmt.Printf("error downloading %v: %v\n", book.Title, err)
 				}
 				wg.Done()
 			}()
 		}
 		wg.Wait()
+		close(bChan)
 
 		if runtime.GOOS == "windows" {
 			_, err = fmt.Fprintf(color.Output, "\n%s\n", color.GreenString("[DONE]"))

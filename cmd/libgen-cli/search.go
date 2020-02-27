@@ -17,6 +17,7 @@ package libgen_cli
 
 import (
 	"fmt"
+	"github.com/chzyer/readline"
 	"os"
 	"runtime"
 	"strconv"
@@ -121,9 +122,9 @@ var searchCmd = &cobra.Command{
 		}
 
 		promptTemplate := &promptui.SelectTemplates{
-			Active: `▸ {{ .Title | cyan | bold }}{{ if .Title }} ({{ .Title }}){{end}}`,
+			Active: `▸ {{ .ID | cyan | bold }}{{ if .Title }} ({{ .Title }}){{end}}`,
 			//Inactive: `  {{ .Title | cyan }}{{ if .Title }} ({{ .Title }}){{end}}`,
-			Selected: `{{ "✔" | green }} %s: {{ .Title | cyan }}{{ if .Title }} ({{ .Title }}){{end}}`,
+			Selected: `{{ "✔" | green }} %s: {{ .ID | cyan }}{{ if .Title }} ({{ .Title }}){{end}}`,
 		}
 
 		prompt := promptui.Select{
@@ -131,6 +132,25 @@ var searchCmd = &cobra.Command{
 			Items:     bookSelection,
 			Templates: promptTemplate,
 			Size:      results,
+			IsVimMode: false,
+			Keys: &promptui.SelectKeys{
+				Next: promptui.Key{
+					Code:    readline.CharNext,
+					Display: "↓",
+				},
+				Prev: promptui.Key{
+					Code:    readline.CharPrev,
+					Display: "↑",
+				},
+				PageUp: promptui.Key{
+					Code:    readline.CharForward,
+					Display: "→",
+				},
+				PageDown: promptui.Key{
+					Code:    readline.CharBackward,
+					Display: "←",
+				},
+			},
 		}
 
 		fmt.Println(strings.Repeat("-", 80))
@@ -178,8 +198,6 @@ var searchCmd = &cobra.Command{
 }
 
 func init() {
-	//searchCmd.Flags().StringP("media", "m", "libgen", "controls what "+
-	//	"type of media will be queried for. Ex: fiction, comics, scientific papers, etc.")
 	searchCmd.Flags().IntP("results", "r", 10, "controls how many "+
 		"query results are displayed.")
 	searchCmd.Flags().BoolP("require-author", "a", false, "controls "+
