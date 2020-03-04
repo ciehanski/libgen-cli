@@ -28,10 +28,6 @@ jobs:
       id: install-deps
       run: go mod download
 
-    - name: Test
-      id: test
-      run: go test ./... -v -race -covermode atomic -coverprofile=profile.cov
-
     - name: Build
       id: build
       run: |
@@ -40,9 +36,12 @@ jobs:
         GOOS=windows GOARCH=amd64 go build -o /artifacts/libgen-cli-windows.exe main.go
         GOOS=freebsd GOARCH=amd64 go build -o /artifacts/libgen-cli-freebsd main.go
 
+    - name: Test
+      id: test
+      run: go test ./... -v -race -covermode atomic -coverprofile=profile.cov
+
     - name: Submit Code Coverage
       id: submit-code-cov
-      if: runner.os != 'Windows'
       env:
         COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
