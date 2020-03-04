@@ -17,6 +17,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/ciehanski/libgen-cli/libgen"
 	"math/rand"
 	"net/http"
 	"os"
@@ -26,7 +27,7 @@ import (
 )
 
 func main() {
-	client := http.Client{Timeout: time.Second * 10, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: libgen.HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	_, err := client.Get("http://clients3.google.com/generate_204")
 	if err != nil {
 		fmt.Println("\nYou need an internet connection to run libgen-cli.")
