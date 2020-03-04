@@ -35,17 +35,17 @@ jobs:
     - name: Build macOS
       id: build-macos
       if: runner.os == 'macOS'
-      run: go build -o libgen-cli-macos main.go
+      run: go build -o /artifacts/libgen-cli-macos main.go
 
     - name: Build Linux
       id: build-linux
       if: runner.os == 'Ubuntu'
-      run: go build -o libgen-cli-linux main.go
+      run: go build -o /artifacts/libgen-cli-linux main.go
 
     - name: Build Windows
       id: build-windows
       if: runner.os == 'Windows'
-      run: go build -o libgen-cli-windows.exe main.go
+      run: go build -o /artifacts/libgen-cli-windows.exe main.go
 
     - name: Submit Code Coverage
       id: submit-code-cov
@@ -62,7 +62,7 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: libgen-cli-linux
-        #path: /
+        path: /artifacts
 
     - name: Upload MacOS Artifact
       id: upload-macos-artifact
@@ -70,7 +70,7 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: libgen-cli-macos
-        #path: /
+        path: /artifacts
 
     - name: Upload Windows Artifact
       id: upload-windows-artifact
@@ -78,7 +78,7 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: libgen-cli-windows.exe
-        #path: /
+        path: /artifacts
 
 #    - name: Create Release
 #      id: create-release
