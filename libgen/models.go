@@ -31,7 +31,7 @@ const (
 	JSONQuery         = "id,title,author,filesize,extension,md5,year,language,pages,publisher,edition,coverurl"
 	TitleMaxLength    = 68
 	AuthorMaxLength   = 25
-	httpClientTimeout = time.Second * 6
+	httpClientTimeout = time.Second * 10
 )
 
 // Book is the struct of resources on Library Genesis.
