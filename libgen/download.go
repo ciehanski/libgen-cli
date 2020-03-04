@@ -111,7 +111,7 @@ func DownloadBook(book *Book, output string) error {
 func DownloadDbdump(filename string, output string) error {
 	filename = RemoveQuotes(filename)
 	mirror := GetWorkingMirror(SearchMirrors)
-	client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	r, err := client.Get(fmt.Sprintf("%s/dbdumps/%s", mirror.String(), filename))
 	if err != nil {
 		return err
@@ -219,7 +219,7 @@ func getBooksdlDownloadURL(book *Book) error {
 	baseURL.RawQuery = q.Encode()
 	book.PageURL = baseURL.String()
 
-	client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	r, err := client.Get(baseURL.String())
 	if err != nil {
 		log.Printf("http.Get(%q) error: %v", baseURL, err)
@@ -252,7 +252,7 @@ func getBokDownloadURL(book *Book) error {
 	queryURL := baseURL.String() + book.Md5
 	book.PageURL = queryURL
 
-	client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	resp, err := client.Get(queryURL)
 	if err != nil {
 		return err
@@ -295,7 +295,7 @@ func checkBokDownloadLimit(book *Book) error {
 		return err
 	}
 	req.Header.Add("Referer", book.PageURL)
-	client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -328,7 +328,7 @@ func getNineThreeURL(book *Book) error {
 	queryURL := baseURL.String() + book.Md5
 	book.PageURL = queryURL
 
-	client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	resp, err := client.Get(queryURL)
 	if err != nil {
 		return err

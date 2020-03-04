@@ -62,7 +62,7 @@ func Search(options *SearchOptions) ([]*Book, error) {
 	options.SearchMirror.RawQuery = q.Encode()
 
 	// Execute GET request on search query
-	client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	r, err := client.Get(options.SearchMirror.String())
 	if err != nil {
 		return nil, err
@@ -114,7 +114,7 @@ func GetDetails(options *GetDetailsOptions) ([]*Book, error) {
 		q.Set("fields", JSONQuery)
 		options.SearchMirror.RawQuery = q.Encode()
 
-		client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+		client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 		r, err := client.Get(options.SearchMirror.String())
 		if err != nil {
 			log.Printf("error reaching API: %v", err)
@@ -214,7 +214,7 @@ func GetDetails(options *GetDetailsOptions) ([]*Book, error) {
 
 // CheckMirror returns the HTTP status code of the DownloadURL provided.
 func CheckMirror(url url.URL) int {
-	client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	r, err := client.Get(url.String())
 	if err != nil || r.StatusCode != http.StatusOK {
 		return http.StatusBadGateway
