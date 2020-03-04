@@ -62,7 +62,7 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: libgen-cli-linux
-        path: /
+        #path: /
 
     - name: Upload MacOS Artifact
       id: upload-macos-artifact
@@ -70,7 +70,7 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: libgen-cli-macos
-        path: /
+        #path: /
 
     - name: Upload Windows Artifact
       id: upload-windows-artifact
@@ -78,7 +78,7 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: libgen-cli-windows.exe
-        path: /
+        #path: /
 
 #    - name: Create Release
 #      id: create-release
