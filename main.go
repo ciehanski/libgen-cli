@@ -17,9 +17,8 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
-	"net"
+	"net/http"
 	"os"
 	"time"
 
@@ -27,14 +26,15 @@ import (
 )
 
 func main() {
-	_, err := net.DialTimeout("tcp", "golang.org:80", time.Second*10)
+	client := http.Client{Timeout: time.Second * 10, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	_, err := client.Get("http://clients3.google.com/generate_204")
 	if err != nil {
 		fmt.Println("\nYou need an internet connection to run libgen-cli.")
 		os.Exit(1)
 	}
 
 	if err := libgen_cli.Execute(); err != nil {
-		log.Printf("%v", err)
+		fmt.Printf("%v", err)
 		os.Exit(1)
 	}
 }

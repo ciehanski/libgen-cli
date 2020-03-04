@@ -111,7 +111,7 @@ func DownloadBook(book *Book, output string) error {
 func DownloadDbdump(filename string, output string) error {
 	filename = RemoveQuotes(filename)
 	mirror := GetWorkingMirror(SearchMirrors)
-	client := http.Client{Timeout: httpClientTimeout}
+	client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	r, err := client.Get(fmt.Sprintf("%s/dbdumps/%s", mirror.String(), filename))
 	if err != nil {
 		return err
@@ -173,19 +173,31 @@ func DownloadDbdump(filename string, output string) error {
 // GetDownloadURL picks a random download mirror to download the specified
 // resource from.
 func GetDownloadURL(book *Book) error {
-	chosenMirror := DownloadMirrors[rand.Intn(2)]
+	chosenMirror := DownloadMirrors[rand.Intn(3)]
 
 	switch chosenMirror.String() {
 	case "http://booksdl.org":
 		if err := getBooksdlDownloadURL(book); err != nil {
 			if err = getBokDownloadURL(book); err != nil {
-				return err
+				if err := getNineThreeURL(book); err != nil {
+					return err
+				}
 			}
 		}
 	case "https://b-ok.cc":
 		if err := getBokDownloadURL(book); err != nil {
+			if err = getNineThreeURL(book); err != nil {
+				if err = getBooksdlDownloadURL(book); err != nil {
+					return err
+				}
+			}
+		}
+	case "http://93.174.95.29":
+		if err := getNineThreeURL(book); err != nil {
 			if err = getBooksdlDownloadURL(book); err != nil {
-				return err
+				if err = getBokDownloadURL(book); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -207,7 +219,7 @@ func getBooksdlDownloadURL(book *Book) error {
 	baseURL.RawQuery = q.Encode()
 	book.PageURL = baseURL.String()
 
-	client := http.Client{Timeout: httpClientTimeout}
+	client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	r, err := client.Get(baseURL.String())
 	if err != nil {
 		log.Printf("http.Get(%q) error: %v", baseURL, err)
@@ -222,7 +234,7 @@ func getBooksdlDownloadURL(book *Book) error {
 		return err
 	}
 
-	book.DownloadURL = findMatch(booksdlReg, b)
+	book.DownloadURL = string(findMatch(booksdlReg, b))
 
 	if err := r.Body.Close(); err != nil {
 		return err
@@ -240,7 +252,7 @@ func getBokDownloadURL(book *Book) error {
 	queryURL := baseURL.String() + book.Md5
 	book.PageURL = queryURL
 
-	client := http.Client{Timeout: httpClientTimeout}
+	client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	resp, err := client.Get(queryURL)
 	if err != nil {
 		return err
@@ -256,11 +268,11 @@ func getBokDownloadURL(book *Book) error {
 	}
 
 	downloadURL := findMatch(bokReg, b)
-	if downloadURL == "" {
+	if downloadURL == nil {
 		return errors.New("no valid download DownloadURL found")
 	}
 
-	book.DownloadURL = "https://b-ok.cc" + downloadURL
+	book.DownloadURL = "https://b-ok.cc" + string(downloadURL)
 
 	if err := checkBokDownloadLimit(book); err != nil {
 		return err
@@ -283,7 +295,8 @@ func checkBokDownloadLimit(book *Book) error {
 		return err
 	}
 	req.Header.Add("Referer", book.PageURL)
-	resp, err := http.DefaultClient.Do(req)
+	client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -306,17 +319,55 @@ func checkBokDownloadLimit(book *Book) error {
 	return nil
 }
 
+func getNineThreeURL(book *Book) error {
+	baseURL := url.URL{
+		Scheme: "http",
+		Host:   "93.174.95.29",
+		Path:   "_ads/",
+	}
+	queryURL := baseURL.String() + book.Md5
+	book.PageURL = queryURL
+
+	client := http.Client{Timeout: httpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	resp, err := client.Get(queryURL)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unable to reach to mirror %v: %v", baseURL.Host, resp.StatusCode)
+	}
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	downloadURL := findMatch(nineThreeReg, b)
+	if downloadURL == nil {
+		return errors.New("no valid download DownloadURL found")
+	}
+
+	book.DownloadURL = "http://93.174.95.29" + string(downloadURL)
+
+	if err := resp.Body.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // findMatch is a helper function that searches an []byte
 // for a specified regex and returns the matches.
-func findMatch(reg string, response []byte) string {
+func findMatch(reg string, response []byte) []byte {
 	re := regexp.MustCompile(reg)
 	match := re.FindString(string(response))
 
 	if match != "" {
-		return match
+		return []byte(match)
 	}
 
-	return ""
+	return nil
 }
 
 func getBookFilename(book *Book) string {

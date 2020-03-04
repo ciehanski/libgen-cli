@@ -56,9 +56,6 @@ func TestGetDownloadURL(t *testing.T) {
 	if book[0].DownloadURL == "" {
 		t.Error("download URL empty")
 	}
-	if !strings.Contains(book[0].DownloadURL, "http://booksdl.org/get.php?md5=2f2dba2a621b693bb95601c16ed680f8&key=") {
-		t.Error("incorrect URL returned")
-	}
 }
 
 func TestGetBokDownloadURL(t *testing.T) {
@@ -104,6 +101,28 @@ func TestGetBooksdlDownloadURL(t *testing.T) {
 	}
 	if !strings.Contains(book[0].DownloadURL, "http://booksdl.org/get.php?md5=2f2dba2a621b693bb95601c16ed680f8&key=") {
 		t.Errorf("got: %s, expected: http://booksdl.org/get.php?md5=2f2dba2a621b693bb95601c16ed680f8&key=", book[0].DownloadURL)
+	}
+}
+
+func TestGetNineThreeURL(t *testing.T) {
+	book, err := GetDetails(&GetDetailsOptions{
+		Hashes:       []string{"2F2DBA2A621B693BB95601C16ED680F8"},
+		SearchMirror: GetWorkingMirror(SearchMirrors),
+		Print:        false,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	if err := getNineThreeURL(book[0]); err != nil {
+		t.Error(err)
+	}
+
+	if book[0].DownloadURL == "" {
+		t.Error("no valid url found")
+	}
+	if !strings.Contains(book[0].DownloadURL, "http://93.174.95.29") {
+		t.Errorf("got: %s, expected: http://93.174.95.29", book[0].DownloadURL)
 	}
 }
 
@@ -199,10 +218,10 @@ ISBN: 9780893919269,0893919268<br></td><td><textarea rows='13' name='bibtext' id
 	</tr>
 	<tr><td></td><td colspan=2>Both the Turing test and the frame problem have been significant items of discussion since the 1970s in the philosophy of artificial intelligence (AI) and the philisophy of mind. However, there has been little effort during that time to distill how the frame problem bears on the Turing test. If it proves not to be solvable, then not only will the test not be passed, but it will call into question the assumption of classical AI that intelligence is the manipluation of formal constituens under the control of a program. This text explains why there has been less progress in artificial intelligence research than AI proponents would have believed in the mid-1970s. As a first pass, the difficulty of the frame problem would account for some of the lack of progress. An alternative interpretation is that the research paradigm itself is destined to be less productive than might have been hoped. In general termns, the view advanced here is that the future of AI depends on whether the frame problem eventually falls to computational techniques. If it turns out that the frame problem is computationally irreducible, of there is no way to solve it computationally by means of a program operating on formally defined constituents, then an increasing number of experts in the field will reach the conclusion that AI embodies a fundamental misunderstanding of intelligence.</td></tr>
 	</table></body></html>`))
-	if results == "" {
+	if results == nil {
 		t.Error("empty result")
 	}
-	if !strings.Contains(results, "http://booksdl.org/get.php?md5=2f2dba2a621b693bb95601c16ed680f8&key=") {
+	if !strings.Contains(string(results), "http://booksdl.org/get.php?md5=2f2dba2a621b693bb95601c16ed680f8&key=") {
 		t.Error("incorrect DownloadURL returned")
 	}
 }

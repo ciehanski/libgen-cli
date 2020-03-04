@@ -5,7 +5,7 @@ on:
       - '*'
   pull_request:
     branches:
-      - 'master'
+      - '*'
 jobs:
   test:
     strategy:
@@ -35,7 +35,7 @@ jobs:
     - name: Build macOS
       id: build-macos
       if: runner.os == 'macOS'
-      run: go build -o libgen-cli-darwin main.go
+      run: go build -o libgen-cli-macos main.go
 
     - name: Build Linux
       id: build-linux
@@ -55,6 +55,30 @@ jobs:
       run: |
         GO111MODULE=off go get -u github.com/mattn/goveralls
         $(go env GOPATH)/bin/goveralls -service=github -coverprofile=profile.cov
+
+    - name: Upload Linux Artifact
+      id: upload-linux-artifact
+      if: success() || failure()
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: libgen-cli-linux
+        path: /
+
+    - name: Upload MacOS Artifact
+      id: upload-macos-artifact
+      if: success() || failure()
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: libgen-cli-macos
+        path: /
+
+    - name: Upload Windows Artifact
+      id: upload-windows-artifact
+      if: success() || failure()
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: libgen-cli-windows.exe
+        path: /
 
 #    - name: Create Release
 #      id: create-release

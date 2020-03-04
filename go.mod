@@ -9,4 +9,5 @@ require (
 	github.com/fatih/color v1.9.0
 	github.com/manifoldco/promptui v0.7.0
 	github.com/spf13/cobra v0.0.6
+	golang.org/x/sys v0.0.0-20200301204400-5d559ad92b82 // indirect
 )

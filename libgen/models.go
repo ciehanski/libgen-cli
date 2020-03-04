@@ -21,13 +21,14 @@ import (
 )
 
 const (
-	Version    = "v1.0.4"
-	SearchHref = "<a href='book/index.php.+</a>"
-	SearchMD5  = "[A-Z0-9]{32}"
-	booksdlReg = "http://booksdl.org/get\\.php\\?md5=\\w{32}\\&key=\\w{16}"
-	bokReg     = `\/dl\/\d{6}\/\w{6}`
+	Version      = "v1.0.5"
+	SearchHref   = "<a href='book/index.php.+</a>"
+	SearchMD5    = "[A-Z0-9]{32}"
+	booksdlReg   = "http://booksdl.org/get\\.php\\?md5=\\w{32}\\&key=\\w{16}"
+	bokReg       = `\/dl\/\d{6}\/\w{6}`
+	nineThreeReg = `\/main\/\d{1}\/[A-Za-z0-9]{32}\/.+?(gz|pdf|rar|djvu|epub|chm)`
 	//libgenPwReg     = `http://libgen.pw/item/detail/id/\d*$`
-	JSONQuery         = "id,title,author,filesize,Extension,md5,year,language,pages,publisher,edition"
+	JSONQuery         = "id,title,author,filesize,extension,md5,year,language,pages,publisher,edition,coverurl"
 	TitleMaxLength    = 68
 	AuthorMaxLength   = 25
 	httpClientTimeout = time.Second * 6
@@ -46,6 +47,7 @@ type Book struct {
 	Pages       string
 	Publisher   string
 	Edition     string
+	CoverURL    string
 	DownloadURL string
 	PageURL     string
 }
@@ -81,6 +83,10 @@ var DownloadMirrors = []url.URL{
 	{
 		Scheme: "https",
 		Host:   "b-ok.cc",
+	},
+	{
+		Scheme: "http",
+		Host:   "93.174.95.29",
 	},
 }
 

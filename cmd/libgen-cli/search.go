@@ -17,12 +17,12 @@ package libgen_cli
 
 import (
 	"fmt"
-	"github.com/chzyer/readline"
 	"os"
 	"runtime"
 	"strconv"
 	"strings"
 
+	"github.com/chzyer/readline"
 	"github.com/dustin/go-humanize"
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
@@ -115,7 +115,7 @@ var searchCmd = &cobra.Command{
 			size, err := strconv.Atoi(b.Filesize)
 			if err != nil {
 				fmt.Printf("error converting string to int: %v\n", err)
-				os.Exit(0)
+				os.Exit(1)
 			}
 			selectChoice += fmt.Sprintf("| %v", color.New(color.FgGreen).Sprintf(humanize.Bytes(uint64(size))))
 			bookSelection = append(bookSelection, selectChoice)
