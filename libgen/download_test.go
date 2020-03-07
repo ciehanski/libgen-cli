@@ -83,9 +83,6 @@ func TestGetBokDownloadURL(t *testing.T) {
 }
 
 func TestGetBooksdlDownloadURL(t *testing.T) {
-	// TODO: temp. libgen.lc is having issues
-	t.Skip("temporary. libgen.lc is having connectivity issues")
-
 	book, err := GetDetails(&GetDetailsOptions{
 		Hashes:       []string{"2F2DBA2A621B693BB95601C16ED680F8"},
 		SearchMirror: GetWorkingMirror(SearchMirrors),
@@ -230,8 +227,6 @@ ISBN: 9780893919269,0893919268<br></td><td><textarea rows='13' name='bibtext' id
 }
 
 func TestCheckBokDownloadLimit(t *testing.T) {
-	t.Skip()
-
 	book, _ := GetDetails(&GetDetailsOptions{
 		Hashes:       []string{"2F2DBA2A621B693BB95601C16ED680F8"},
 		SearchMirror: GetWorkingMirror(SearchMirrors),
@@ -241,7 +236,7 @@ func TestCheckBokDownloadLimit(t *testing.T) {
 	_ = GetDownloadURL(book[0])
 
 	err := checkBokDownloadLimit(book[0])
-	if err == nil {
-		t.Error("expected err != nil")
+	if err != nil {
+		t.Errorf("expected err == nil, got: %v", err)
 	}
 }

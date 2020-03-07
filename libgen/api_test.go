@@ -1199,7 +1199,7 @@ func TestParseHashes(t *testing.T) {
 </script>
 <table width=100%><tr><td align='left' width=45%></td><td align=center width=10%><font size="3" color="gray"><a href="search.php?&req=test&phrase=1&view=simple&column=def&sort=def&sortmode=ASC&page=2">&nbsp;&nbsp;&#9658;</a></font></td><td align='right' width=45%></td></tr></table></body></html>`
 	results := 5
-	hashes := parseHashes(response, results)
+	hashes := parseHashes([]byte(response), results)
 
 	if hashes[0] != "2F2DBA2A621B693BB95601C16ED680F8" {
 		t.Errorf("got: %s, expected: 2F2DBA2A621B693BB95601C16ED680F8", hashes[0])

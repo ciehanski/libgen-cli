@@ -35,7 +35,7 @@ import (
 // First, it queries Booksdl.org and then b-ok.cc for valid DownloadURL.
 // Then, the download process is initiated with a progress bar displayed to
 // the user's CLI.
-func DownloadBook(book *Book, output string) error {
+func DownloadBook(book *Book, outputPath string) error {
 	var filesize int64
 	filename := getBookFilename(book)
 
@@ -47,7 +47,8 @@ func DownloadBook(book *Book, output string) error {
 	if strings.Contains(book.PageURL, "b-ok.cc") {
 		req.Header.Add("Referer", book.PageURL)
 	}
-	r, err := http.DefaultClient.Do(req)
+	client := http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	r, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -56,11 +57,10 @@ func DownloadBook(book *Book, output string) error {
 		filesize = r.ContentLength
 		bar := pb.Full.Start64(filesize)
 
-		// check if output folder was provided. If not, create
-		// one at the current directory called "libgen."
-		var mkErr error
 		var out *os.File
-		if output == "" {
+		var mkErr error
+		// if output path was not provided
+		if outputPath == "" {
 			wd, err := os.Getwd()
 			if err != nil {
 				return err
@@ -76,9 +76,10 @@ func DownloadBook(book *Book, output string) error {
 			if mkErr != nil {
 				return mkErr
 			}
+			// If output path was provided
 		} else {
-			if stat, err := os.Stat(output); err == nil && stat.IsDir() {
-				out, err = os.Create(fmt.Sprintf("%s/%s", output, filename))
+			if stat, err := os.Stat(outputPath); err == nil && stat.IsDir() {
+				out, err = os.Create(fmt.Sprintf("%s/%s", outputPath, filename))
 				if err != nil {
 					return err
 				}
@@ -108,10 +109,10 @@ func DownloadBook(book *Book, output string) error {
 
 // DownloadDbdump downloads the selected database dump from
 // Library Genesis.
-func DownloadDbdump(filename string, output string) error {
+func DownloadDbdump(filename string, outputPath string) error {
 	filename = RemoveQuotes(filename)
 	mirror := GetWorkingMirror(SearchMirrors)
-	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HTTPClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	r, err := client.Get(fmt.Sprintf("%s/dbdumps/%s", mirror.String(), filename))
 	if err != nil {
 		return err
@@ -121,9 +122,10 @@ func DownloadDbdump(filename string, output string) error {
 		filesize := r.ContentLength
 		bar := pb.Full.Start64(filesize)
 
-		var mkErr error
 		var out *os.File
-		if output == "" {
+		var mkErr error
+		// if output path was not provided
+		if outputPath == "" {
 			wd, err := os.Getwd()
 			if err != nil {
 				return err
@@ -139,9 +141,10 @@ func DownloadDbdump(filename string, output string) error {
 			if mkErr != nil {
 				return mkErr
 			}
+			// If output path was provided
 		} else {
-			if stat, err := os.Stat(output); err == nil && stat.IsDir() {
-				out, err = os.Create(fmt.Sprintf("%s/%s", output, filename))
+			if stat, err := os.Stat(outputPath); err == nil && stat.IsDir() {
+				out, err = os.Create(fmt.Sprintf("%s/%s", outputPath, filename))
 				if err != nil {
 					return err
 				}
@@ -219,7 +222,7 @@ func getBooksdlDownloadURL(book *Book) error {
 	baseURL.RawQuery = q.Encode()
 	book.PageURL = baseURL.String()
 
-	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HTTPClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	r, err := client.Get(baseURL.String())
 	if err != nil {
 		log.Printf("http.Get(%q) error: %v", baseURL, err)
@@ -252,7 +255,7 @@ func getBokDownloadURL(book *Book) error {
 	queryURL := baseURL.String() + book.Md5
 	book.PageURL = queryURL
 
-	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HTTPClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	resp, err := client.Get(queryURL)
 	if err != nil {
 		return err
@@ -295,7 +298,7 @@ func checkBokDownloadLimit(book *Book) error {
 		return err
 	}
 	req.Header.Add("Referer", book.PageURL)
-	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HTTPClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -328,7 +331,7 @@ func getNineThreeURL(book *Book) error {
 	queryURL := baseURL.String() + book.Md5
 	book.PageURL = queryURL
 
-	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HTTPClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	resp, err := client.Get(queryURL)
 	if err != nil {
 		return err

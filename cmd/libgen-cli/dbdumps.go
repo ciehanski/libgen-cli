@@ -16,14 +16,14 @@ package libgen_cli
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/manifoldco/promptui"
-	"github.com/spf13/cobra"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"runtime"
+
+	"github.com/fatih/color"
+	"github.com/manifoldco/promptui"
+	"github.com/spf13/cobra"
 
 	"github.com/ciehanski/libgen-cli/libgen"
 )
@@ -47,28 +47,32 @@ var dbdumpsCmd = &cobra.Command{
 		output, err := cmd.Flags().GetString("output")
 		if err != nil {
 			fmt.Printf("error getting output flag: %v\n", err)
+			os.Exit(1)
 		}
 
-		fmt.Println("++ Getting all database dumps")
+		fmt.Println("++ Retrieving all database dumps...")
 
 		mirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
 
 		r, err := http.Get(mirror.String() + "/dbdumps/")
 		if err != nil {
-			log.Fatalf("error reaching mirror: %v", err)
+			fmt.Printf("error reaching mirror: %v\n", err)
+			os.Exit(1)
 		}
 
 		b, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Fatalf("error reading response: %v", err)
+			fmt.Printf("error reading response: %v\n", err)
+			os.Exit(1)
 		}
 
-		dbdumps := libgen.ParseDbdumps(string(b))
+		dbdumps := libgen.ParseDbdumps(b)
 		if dbdumps == nil {
-			log.Fatal("error parsing dbdumps. No dbdumps found.")
+			fmt.Println("\nerror parsing dbdumps. No dbdumps found.")
+			os.Exit(1)
 		}
 		if len(dbdumps) == 0 {
-			fmt.Print("\nNo results found.\n")
+			fmt.Println("\nNo results found.")
 			os.Exit(1)
 		}
 
@@ -90,27 +94,28 @@ var dbdumpsCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var selectedDbDump string
+		var selectedDbdump string
 		for i, b := range dbdumps {
 			if b == result {
-				selectedDbDump = dbdumps[i]
+				selectedDbdump = dbdumps[i]
 				break
 			}
 		}
 
-		fmt.Printf("Download started for: %s\n", libgen.RemoveQuotes(selectedDbDump))
+		fmt.Printf("Download started for: %s\n", libgen.RemoveQuotes(selectedDbdump))
 
-		if err := libgen.DownloadDbdump(selectedDbDump, output); err != nil {
-			log.Fatalf("error download dbdump: %v", err)
+		if err := libgen.DownloadDbdump(selectedDbdump, output); err != nil {
+			fmt.Printf("error download dbdump: %v\n", err)
+			os.Exit(1)
 		}
 
 		if runtime.GOOS == "windows" {
-			_, err = fmt.Fprintf(color.Output, "\n%s %s\n", color.GreenString("[OK]"), selectedDbDump)
+			_, err = fmt.Fprintf(color.Output, "\n%s %s\n", color.GreenString("[OK]"), selectedDbdump)
 			if err != nil {
 				fmt.Printf("error writing to Windows os.Stdout: %v\n", err)
 			}
 		} else {
-			fmt.Printf("\n%s %s\n", color.GreenString("[OK]"), selectedDbDump)
+			fmt.Printf("\n%s %s\n", color.GreenString("[OK]"), selectedDbdump)
 		}
 	},
 }

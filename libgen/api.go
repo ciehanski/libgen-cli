@@ -62,7 +62,7 @@ func Search(options *SearchOptions) ([]*Book, error) {
 	options.SearchMirror.RawQuery = q.Encode()
 
 	// Execute GET request on search query
-	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HTTPClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	r, err := client.Get(options.SearchMirror.String())
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func Search(options *SearchOptions) ([]*Book, error) {
 	}
 
 	// Get hashes from raw webpage and store them in hashes
-	hashes := parseHashes(string(b), options.Results)
+	hashes := parseHashes(b, options.Results)
 
 	books, err := GetDetails(&GetDetailsOptions{
 		Hashes:        hashes,
@@ -114,7 +114,7 @@ func GetDetails(options *GetDetailsOptions) ([]*Book, error) {
 		q.Set("fields", JSONQuery)
 		options.SearchMirror.RawQuery = q.Encode()
 
-		client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+		client := http.Client{Timeout: HTTPClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 		r, err := client.Get(options.SearchMirror.String())
 		if err != nil {
 			log.Printf("error reaching API: %v", err)
@@ -214,7 +214,7 @@ func GetDetails(options *GetDetailsOptions) ([]*Book, error) {
 
 // CheckMirror returns the HTTP status code of the DownloadURL provided.
 func CheckMirror(url url.URL) int {
-	client := http.Client{Timeout: HttpClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{Timeout: HTTPClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
 	r, err := client.Get(url.String())
 	if err != nil || r.StatusCode != http.StatusOK {
 		return http.StatusBadGateway
@@ -242,12 +242,14 @@ func GetWorkingMirror(urls []url.URL) url.URL {
 	return mirror
 }
 
-func ParseDbdumps(response string) []string {
+// ParseDbdumps takes in a HTTP response and scans it for
+// any string that matches a filepath and returns all results.
+func ParseDbdumps(response []byte) []string {
 	re := regexp.MustCompile(`(["])(.*?\.(rar|sql.gz))"`)
-	dbdumps := re.FindAllString(response, -1)
+	dbdumps := re.FindAllString(string(response), -1)
 
-	for _, dbdump := range dbdumps {
-		dbdump = RemoveQuotes(dbdump)
+	for i, dbdump := range dbdumps {
+		dbdumps[i] = RemoveQuotes(dbdump)
 	}
 
 	return dbdumps
@@ -255,10 +257,10 @@ func ParseDbdumps(response string) []string {
 
 // parseHashes takes in a HTTP response and scans it for
 // an MD5 hash and then returns the found hashes.
-func parseHashes(response string, results int) []string {
+func parseHashes(response []byte, results int) []string {
 	var hashes []string
 	re := regexp.MustCompile(SearchHref)
-	matches := re.FindAllString(response, -1)
+	matches := re.FindAllString(string(response), -1)
 
 	var counter int
 	for _, m := range matches {
@@ -278,43 +280,42 @@ func parseHashes(response string, results int) []string {
 
 // parseResponse takes in a slice of bytes and formats it
 // returns a Book object from the slice of bytes.
-func parseResponse(data []byte) (*Book, error) {
+func parseResponse(response []byte) (*Book, error) {
 	var book Book
 	var formattedResp []map[string]string
 
-	if err := json.Unmarshal(data, &formattedResp); err == nil {
-		for _, item := range formattedResp {
-			for k, v := range item {
-				switch k {
-				case "id":
-					book.ID = v
-				case "title":
-					book.Title = v
-				case "author":
-					book.Author = v
-				case "filesize":
-					book.Filesize = v
-				case "extension":
-					book.Extension = v
-				case "md5":
-					book.Md5 = v
-				case "year":
-					book.Year = v
-				case "language":
-					book.Language = v
-				case "pages":
-					book.Pages = v
-				case "publisher":
-					book.Publisher = v
-				case "edition":
-					book.Edition = v
-				case "coverurl":
-					book.CoverURL = v
-				}
+	if err := json.Unmarshal(response, &formattedResp); err != nil {
+		return nil, err
+	}
+	for _, item := range formattedResp {
+		for k, v := range item {
+			switch k {
+			case "id":
+				book.ID = v
+			case "title":
+				book.Title = v
+			case "author":
+				book.Author = v
+			case "filesize":
+				book.Filesize = v
+			case "extension":
+				book.Extension = v
+			case "md5":
+				book.Md5 = v
+			case "year":
+				book.Year = v
+			case "language":
+				book.Language = v
+			case "pages":
+				book.Pages = v
+			case "publisher":
+				book.Publisher = v
+			case "edition":
+				book.Edition = v
+			case "coverurl":
+				book.CoverURL = v
 			}
 		}
-	} else {
-		return &Book{}, err
 	}
 
 	return &book, nil
@@ -322,11 +323,11 @@ func parseResponse(data []byte) (*Book, error) {
 
 // formatTitle shortens the title of a Book down to
 // the maximum allowed by TitleMaxLength.
-func formatTitle(title string, maxLen int) string {
+func formatTitle(title string, maximumLength int) string {
 	var fTitle []string
 	var counter int
 
-	if len(title) <= maxLen {
+	if len(title) <= maximumLength {
 		return title
 	}
 
@@ -334,7 +335,7 @@ func formatTitle(title string, maxLen int) string {
 	for _, t := range strings.Split(title, " ") {
 		counter += len(t)
 
-		if counter > maxLen {
+		if counter > maximumLength {
 			counter = 0
 			t = t + "...\n"
 		}
@@ -361,6 +362,8 @@ func prettify(key string, value string, col color.Attribute, align string) error
 	return nil
 }
 
+// RemoveQuotes is a helper function that removes the quotes from
+// dbdumps page results.
 func RemoveQuotes(s string) string {
 	if s == "" {
 		return ""
