@@ -31,6 +31,8 @@ const (
 	TitleMaxLength    = 68
 	AuthorMaxLength   = 25
 	HTTPClientTimeout = time.Second * 10
+	UploadUsername    = "genesis"
+	UploadPassword    = "upload"
 	//libgenPwReg     = `http://libgen.pw/item/detail/id/\d*$`
 )
 

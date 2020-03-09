@@ -1,6 +1,6 @@
 test:
 	go test -race ./...
-	rm -rf libgen/libgen
+	rm -rf cmd/libgen-cli/libgen
 build:
 	GOARCH=amd64 GOOS=darwin go build -o libgen-cli-darwin
 	GOARCH=amd64 GOOS=linux go build -o libgen-cli-linux
