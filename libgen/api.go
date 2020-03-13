@@ -16,6 +16,7 @@
 package libgen
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -62,7 +63,12 @@ func Search(options *SearchOptions) ([]*Book, error) {
 	options.SearchMirror.RawQuery = q.Encode()
 
 	// Execute GET request on search query
-	client := http.Client{Timeout: HTTPClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{
+		Timeout: HTTPClientTimeout,
+		Transport: &http.Transport{
+			Proxy:           http.ProxyFromEnvironment,
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}}
 	r, err := client.Get(options.SearchMirror.String())
 	if err != nil {
 		return nil, err
@@ -114,7 +120,12 @@ func GetDetails(options *GetDetailsOptions) ([]*Book, error) {
 		q.Set("fields", JSONQuery)
 		options.SearchMirror.RawQuery = q.Encode()
 
-		client := http.Client{Timeout: HTTPClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+		client := http.Client{
+			Timeout: HTTPClientTimeout,
+			Transport: &http.Transport{
+				Proxy:           http.ProxyFromEnvironment,
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}}
 		r, err := client.Get(options.SearchMirror.String())
 		if err != nil {
 			log.Printf("error reaching API: %v", err)
@@ -214,7 +225,12 @@ func GetDetails(options *GetDetailsOptions) ([]*Book, error) {
 
 // CheckMirror returns the HTTP status code of the DownloadURL provided.
 func CheckMirror(url url.URL) int {
-	client := http.Client{Timeout: HTTPClientTimeout, Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{
+		Timeout: HTTPClientTimeout,
+		Transport: &http.Transport{
+			Proxy:           http.ProxyFromEnvironment,
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}}
 	r, err := client.Get(url.String())
 	if err != nil || r.StatusCode != http.StatusOK {
 		return http.StatusBadGateway

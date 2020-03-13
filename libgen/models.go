@@ -73,6 +73,10 @@ var SearchMirrors = []url.URL{
 		Scheme: "http",
 		Host:   "libgen.unblockall.org",
 	},
+	{
+		Scheme: "https",
+		Host:   "93.174.95.27",
+	},
 }
 
 // DownloadMirrors contains all valid and tested mirrors used for
