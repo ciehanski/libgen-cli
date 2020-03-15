@@ -10,10 +10,15 @@ quickly query the Library Genesis dataset and download any of its contents.
 You can download the latest binary from the releases section of this repo
 which can be found [here](https://github.com/ciehanski/libgen-cli/releases).
 
+Homebrew:
+```bash
+brew install libgen-cli
+```
+
 If you have Golang installed on your local machine you can use the
 commands belows to install it directly into your $GOPATH.
 
-```
+```bash
 go get -u github.com/ciehanski/libgen-cli
 go install github.com/ciehanski/libgen-cli
 ```
