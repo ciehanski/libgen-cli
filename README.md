@@ -3,7 +3,7 @@
 libgen-cli is a command line interface application which allows users to
 quickly query the Library Genesis dataset and download any of its contents.
 
-### Table of Contents
+## Table of Contents
 - [Installation](#installation)
 - [Commands](#commands)
 	- [Search](#search)
