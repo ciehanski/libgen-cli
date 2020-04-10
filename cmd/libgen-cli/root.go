@@ -42,6 +42,7 @@ func Execute() error {
 	rootCmd.AddCommand(downloadAllCmd)
 	rootCmd.AddCommand(searchCmd)
 	rootCmd.AddCommand(statusCmd)
+	rootCmd.AddCommand(linkCmd)
 
 	if len(os.Args) < 2 {
 		if err := rootCmd.Help(); err != nil {
