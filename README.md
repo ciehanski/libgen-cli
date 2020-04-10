@@ -3,6 +3,18 @@
 libgen-cli is a command line interface application which allows users to
 quickly query the Library Genesis dataset and download any of its contents.
 
+### Table of Contents
+- [Installation](#installation)
+- [Commands](#commands)
+	- [Search](#search)
+	- [Download](#download)
+	- [Dbdumps](#dbdumps)
+	- [Status](#status)
+    - [Version](#version)
+    - [Link](#link)
+- [Disclaimer](#disclaimer)
+- [License](#license)
+
 ![Example](https://github.com/ciehanski/libgen-cli/blob/master/resources/libgen-cli-example.gif)
 
 ## Installation
@@ -110,6 +122,15 @@ Specify an output path:
 
 ```bash
 libgen dbdumps -o ~/Desktop
+```
+
+#### Link
+
+The _link_ command will retrieve and output the direct download link
+of a specific MD5 resource.
+
+```bash
+libgen link 2F2DBA2A621B693BB95601C16ED680F8
 ```
 
 #### Status:
