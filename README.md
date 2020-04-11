@@ -16,7 +16,7 @@ quickly query the Library Genesis dataset and download any of its contents.
 - [Disclaimer](#disclaimer)
 - [License](#license)
 
-![Example](https://github.com/ciehanski/libgen-cli/blob/master/resources/libgen-cli-example.gif)
+![libgen-cli Example](https://github.com/ciehanski/libgen-cli/blob/master/resources/libgen-cli-example.gif)
 
 ## Installation
 
@@ -31,7 +31,7 @@ go get -u github.com/ciehanski/libgen-cli
 go install github.com/ciehanski/libgen-cli
 ```
 
-## Shell Autocompletion
+### Shell Autocompletion
 
 Source the completion script in your shell commands file:
 
