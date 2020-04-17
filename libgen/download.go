@@ -307,7 +307,7 @@ func checkBokDownloadLimit(book *Book) error {
 		return err
 	}
 
-	re := regexp.MustCompile("WARNING: There are more than 5 downloads from your IP")
+	re := regexp.MustCompile(bokDownloadLimit)
 	matches := re.FindAllString(string(b), -1)
 
 	if len(matches) > 0 {
