@@ -5,7 +5,6 @@ quickly query the Library Genesis dataset and download any of its contents.
 
 ## Table of Contents
 - [Installation](#installation)
-    - [Shell Autocompletion](#shell-autocompletion)
 - [Commands](#commands)
 	- [Search](#search)
 	- [Download](#download)
@@ -29,20 +28,6 @@ commands belows to install it directly into your $GOPATH.
 ```bash
 go get -u github.com/ciehanski/libgen-cli
 go install github.com/ciehanski/libgen-cli
-```
-
-### Shell Autocompletion
-
-Source the completion script in your shell commands file:
-
-Bash:
-```bash
-echo 'source <(libgen completion bash)' >> ~/.bashrc
-```
-
-Zsh:
-```bash
-echo 'source <(libgen completion zsh)' >> ~/.zshrc
 ```
 
 ## Commands
