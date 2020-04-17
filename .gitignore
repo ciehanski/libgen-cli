@@ -1,5 +1,6 @@
 .idea
 /idea/
+/cmd/libgen-cli/libgen
 libgen-cli
 /libgen/test
 /libgen/libgen

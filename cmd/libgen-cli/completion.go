@@ -24,7 +24,7 @@ import (
 )
 
 var completionCmd = &cobra.Command{
-	Use:       "completion [SHELL]",
+	Use:       "completion",
 	Short:     "Generate bash completion script for bash or zsh",
 	Args:      cobra.ExactValidArgs(1),
 	ValidArgs: []string{"bash", "zsh"},
@@ -64,63 +64,16 @@ func genZshCompletion(w io.Writer) error {
 
 const (
 	bashCompletion = `
-__libgen_search() {
-    if out=$( ./libgen search --no-headers 2>/dev/null | awk '{print $1}' ); then
-        COMPREPLY=( $( compgen -W "${out[*]}" -- "$cur" ) )
-    fi
-}
-__libgen_status() {
-    if out=$( ./libgen status --no-headers 2>/dev/null | awk '{print $1}' ); then
-        COMPREPLY=( $( compgen -W "${out[*]}" -- "$cur" ) )
-    fi
-}
-__libgen_link() {
-    if out=$( ./libgen link --no-headers 2>/dev/null | awk '{print $1}' ); then
-        COMPREPLY=( $( compgen -W "${out[*]}" -- "$cur" ) )
-    fi
-}
-__libgen_dbdumps() {
-    if out=$( ./libgen dbdumps --no-headers 2>/dev/null | awk '{print $1}' ); then
-        COMPREPLY=( $( compgen -W "${out[*]}" -- "$cur" ) )
-    fi
-}
-__libgen_download() {
-    if out=$( ./libgen download --no-headers 2>/dev/null | awk '{print $1}' ); then
-        COMPREPLY=( $( compgen -W "${out[*]}" -- "$cur" ) )
-    fi
-}
-__libgen_download_all() {
-    if out=$( ./libgen download-all --no-headers 2>/dev/null | awk '{print $1}' ); then
-        COMPREPLY=( $( compgen -W "${out[*]}" -- "$cur" ) )
-    fi
-}
-__libgen_version() {
-    if out=$( ./libgen -v --no-headers 2>/dev/null | awk '{print $1}' ); then
+__libgen_root() {
+    if out=$( ./libgen --no-headers 2>/dev/null | awk '{print $1}' ); then
         COMPREPLY=( $( compgen -W "${out[*]}" -- "$cur" ) )
     fi
 }
 __libgen_custom_func() {
     case ${last_command} in
-		libgen_search)
-			__libgen_search
-		;;
-		libgen_status)
-			__libgen_status
-		;;
-		libgen_link)
-			__libgen_link
-		;;
-		libgen_dbdumps)
-			__libgen_dbdumps
-		;;
-		libgen_download)
-			__libgen_download
-		;;
-		libgen_download_all)
-			__libgen_download_all
-		;;
-		libgen_version)
-			__libgen_version
+		libgen_search | libgen_status | libgen_link | libgen_dbdumps | 
+	libgen_download | libgen_download_all | libgen_version)
+			__libgen_root
 		;;
         *)
         ;;
