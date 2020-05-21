@@ -232,8 +232,11 @@ func CheckMirror(url url.URL) int {
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}}
 	r, err := client.Get(url.String())
-	if err != nil || r.StatusCode != http.StatusOK {
+	if err != nil {
 		return http.StatusBadGateway
+	}
+	if r.StatusCode != http.StatusOK {
+		return r.StatusCode
 	}
 	return http.StatusOK
 }

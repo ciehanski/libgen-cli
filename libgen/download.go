@@ -18,7 +18,6 @@ package libgen
 import (
 	"errors"
 	"fmt"
-	"github.com/cheggaaa/pb/v3"
 	"io"
 	"io/ioutil"
 	"log"
@@ -28,6 +27,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 // DownloadBook grabs the download DownloadURL for the book requested.
@@ -178,7 +179,7 @@ func GetDownloadURL(book *Book) error {
 	chosenMirror := DownloadMirrors[rand.Intn(3)]
 
 	switch chosenMirror.String() {
-	case "http://booksdl.org":
+	case "80.82.78.13":
 		if err := getBooksdlDownloadURL(book); err != nil {
 			if err = getBokDownloadURL(book); err != nil {
 				if err := getNineThreeURL(book); err != nil {
