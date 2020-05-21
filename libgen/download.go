@@ -175,6 +175,7 @@ func DownloadDbdump(filename string, outputPath string) error {
 
 // GetDownloadURL picks a random download mirror to download the specified
 // resource from.
+// This is a hack that I don't like and needs to be revisited.
 func GetDownloadURL(book *Book) error {
 	chosenMirror := DownloadMirrors[rand.Intn(3)]
 
