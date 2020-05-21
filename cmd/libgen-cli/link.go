@@ -45,7 +45,7 @@ var linkCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Printf("++ Retrieving donwload link for: %s\n", args[0])
+		fmt.Printf("++ Retrieving download link for: %s\n", args[0])
 
 		bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
 			Hashes:       args,
