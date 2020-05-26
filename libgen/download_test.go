@@ -33,9 +33,7 @@ func TestDownloadBook(t *testing.T) {
 		t.Error(err)
 	}
 	if err := DownloadBook(book[0], ""); err != nil {
-		if err.Error() != "unable to reach mirror 80.82.78.13: HTTP 502" {
-			t.Error(err)
-		}
+		t.Error(err)
 	}
 }
 
