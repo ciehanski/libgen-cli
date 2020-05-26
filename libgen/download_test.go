@@ -20,9 +20,6 @@ import (
 )
 
 func TestDownloadBook(t *testing.T) {
-	// Test works locally, but fails in GitHub Actions for some reason.
-	// Silencing the test for now.
-	t.Skip()
 	book, err := GetDetails(&GetDetailsOptions{
 		Hashes:       []string{"2F2DBA2A621B693BB95601C16ED680F8"},
 		SearchMirror: GetWorkingMirror(SearchMirrors),
@@ -32,7 +29,7 @@ func TestDownloadBook(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err := GetDownloadURL(book[0]); err != nil {
+	if err := getBooksdlDownloadURL(book[0]); err != nil {
 		t.Error(err)
 	}
 	if err := DownloadBook(book[0], ""); err != nil {
@@ -53,7 +50,6 @@ func TestGetDownloadURL(t *testing.T) {
 	if err := GetDownloadURL(book[0]); err != nil {
 		t.Error(err)
 	}
-
 	if book[0].DownloadURL == "" {
 		t.Error("download URL empty")
 	}
