@@ -155,6 +155,9 @@ func GetDownloadURL(book *Book) error {
 				}
 			}
 		}
+		if book.DownloadURL != "" {
+			break
+		}
 		// Increment tries
 		x++
 	}
