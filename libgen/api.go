@@ -205,12 +205,9 @@ func GetWorkingMirror(urls []url.URL) url.URL {
 
 	for {
 		randMirror := urls[rand.Intn(len(urls))]
-
 		if CheckMirror(randMirror) == http.StatusOK {
 			mirror = randMirror
 			break
-		} else {
-			continue
 		}
 	}
 
@@ -220,7 +217,7 @@ func GetWorkingMirror(urls []url.URL) url.URL {
 // ParseDbdumps takes in a HTTP response and scans it for
 // any string that matches a filepath and returns all results.
 func ParseDbdumps(response []byte) []string {
-	re := regexp.MustCompile(`(["])(.*?\.(rar|sql.gz))"`)
+	re := regexp.MustCompile(dbdumpReg)
 	dbdumps := re.FindAllString(string(response), -1)
 
 	for i, dbdump := range dbdumps {
