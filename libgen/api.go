@@ -33,6 +33,47 @@ import (
 	"github.com/fatih/color"
 )
 
+// Book is the struct of resources on Library Genesis.
+type Book struct {
+	ID          string
+	Title       string
+	Author      string
+	Filesize    string
+	Extension   string
+	Md5         string
+	Year        string
+	Language    string
+	Pages       string
+	Publisher   string
+	Edition     string
+	CoverURL    string
+	DownloadURL string
+	PageURL     string
+}
+
+// SearchOptions are the optional parameters available for the Search
+// function.
+type SearchOptions struct {
+	Query         string
+	SearchMirror  url.URL
+	Results       int
+	Print         bool
+	RequireAuthor bool
+	Extension     string
+	Year          int
+}
+
+// GetDetailsOptions are the optional parameters available for the GetDetails
+// function.
+type GetDetailsOptions struct {
+	Hashes        []string
+	SearchMirror  url.URL
+	Print         bool
+	RequireAuthor bool
+	Extension     string
+	Year          int
+}
+
 // Search sends a query to the search.php page hosted by gen.lib.rus.ec(or any
 // similar mirror) and then provides the web page's contents provided from the
 // resulting http request to the parseHashes() function to extract the specific
@@ -62,29 +103,8 @@ func Search(options *SearchOptions) ([]*Book, error) {
 	q.Set("column", "def")
 	options.SearchMirror.RawQuery = q.Encode()
 
-	// Execute GET request on search query
-	client := http.Client{
-		Timeout: HTTPClientTimeout,
-		Transport: &http.Transport{
-			Proxy:           http.ProxyFromEnvironment,
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}}
-	r, err := client.Get(options.SearchMirror.String())
+	b, err := getBody(options.SearchMirror.String())
 	if err != nil {
-		return nil, err
-	}
-	if r.StatusCode != http.StatusOK {
-		return nil, err
-	}
-
-	// Read body of response to get HTML
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	// Close request and handle possible error.
-	if err := r.Body.Close(); err != nil {
 		return nil, err
 	}
 
@@ -120,21 +140,8 @@ func GetDetails(options *GetDetailsOptions) ([]*Book, error) {
 		q.Set("fields", JSONQuery)
 		options.SearchMirror.RawQuery = q.Encode()
 
-		client := http.Client{
-			Timeout: HTTPClientTimeout,
-			Transport: &http.Transport{
-				Proxy:           http.ProxyFromEnvironment,
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			}}
-		r, err := client.Get(options.SearchMirror.String())
+		b, err := getBody(options.SearchMirror.String())
 		if err != nil {
-			log.Printf("error reaching API: %v", err)
-			return nil, err
-		}
-
-		b, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			log.Printf("error reading response from API: %v", err)
 			return nil, err
 		}
 
@@ -160,64 +167,13 @@ func GetDetails(options *GetDetailsOptions) ([]*Book, error) {
 			}
 		}
 		if options.Print {
-			var fsize string
-			size, err := strconv.Atoi(book.Filesize)
-			if err != nil {
-				fsize = "N/A"
-			} else {
-				fsize = humanize.Bytes(uint64(size))
-			}
-
-			// Print separation lines
-			fmt.Println(strings.Repeat("-", 80))
-
-			// Print ID + Title
-			fTitle := fmt.Sprintf("%5s %s", color.New(color.FgHiBlue).Sprintf(book.ID), book.Title)
-			fTitle = formatTitle(fTitle, TitleMaxLength)
-			if runtime.GOOS == "windows" {
-				_, err = fmt.Fprintf(color.Output, "%s\n    ++ ", fTitle)
-				if err != nil {
-					return nil, err
-				}
-			} else {
-				fmt.Printf("%s\n    ++ ", fTitle)
-			}
-
-			// Slice author name if it exceeds AuthorMaxLength
-			var formatAuthor string
-			if len(book.Author) > AuthorMaxLength {
-				formatAuthor = book.Author[:AuthorMaxLength]
-			} else if book.Author == "" {
-				formatAuthor = "N/A"
-			} else {
-				formatAuthor = book.Author
-			}
-
-			err = prettify("author", formatAuthor, color.FgYellow, "-25")
-			if err != nil {
+			if err := printDetails(book); err != nil {
 				return nil, err
 			}
-			err = prettify("year", book.Year, color.FgCyan, "4")
-			if err != nil {
-				return nil, err
-			}
-			err = prettify("size", fsize, color.FgGreen, "6")
-			if err != nil {
-				return nil, err
-			}
-			err = prettify("type", book.Extension, color.FgRed, "4")
-			if err != nil {
-				return nil, err
-			}
-			fmt.Println()
 		}
 
 		// Add valid book to the []Book for the search
 		books = append(books, book)
-
-		if err := r.Body.Close(); err != nil {
-			return nil, err
-		}
 	}
 
 	return books, nil
@@ -272,6 +228,34 @@ func ParseDbdumps(response []byte) []string {
 	}
 
 	return dbdumps
+}
+
+func getBody(baseURL string) ([]byte, error) {
+	client := http.Client{
+		Timeout: HTTPClientTimeout,
+		Transport: &http.Transport{
+			Proxy:           http.ProxyFromEnvironment,
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}}
+	r, err := client.Get(baseURL)
+	if err != nil {
+		log.Printf("http.Get(%q) error: %v", baseURL, err)
+		return nil, err
+	}
+	if r.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to reach to mirror %v: %v", baseURL, r.StatusCode)
+	}
+
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := r.Body.Close(); err != nil {
+		return nil, err
+	}
+
+	return b, nil
 }
 
 // parseHashes takes in a HTTP response and scans it for
@@ -338,6 +322,61 @@ func parseResponse(response []byte) (*Book, error) {
 	}
 
 	return &book, nil
+}
+
+func printDetails(book *Book) error {
+	var fsize string
+	size, err := strconv.Atoi(book.Filesize)
+	if err != nil {
+		fsize = "N/A"
+	} else {
+		fsize = humanize.Bytes(uint64(size))
+	}
+
+	// Print separation lines
+	fmt.Println(strings.Repeat("-", 80))
+
+	// Print ID + Title
+	fTitle := fmt.Sprintf("%5s %s", color.New(color.FgHiBlue).Sprintf(book.ID), book.Title)
+	fTitle = formatTitle(fTitle, TitleMaxLength)
+	if runtime.GOOS == "windows" {
+		_, err = fmt.Fprintf(color.Output, "%s\n    ++ ", fTitle)
+		if err != nil {
+			return err
+		}
+	} else {
+		fmt.Printf("%s\n    ++ ", fTitle)
+	}
+
+	// Slice author name if it exceeds AuthorMaxLength
+	var formatAuthor string
+	if len(book.Author) > AuthorMaxLength {
+		formatAuthor = book.Author[:AuthorMaxLength]
+	} else if book.Author == "" {
+		formatAuthor = "N/A"
+	} else {
+		formatAuthor = book.Author
+	}
+
+	err = prettify("author", formatAuthor, color.FgYellow, "-25")
+	if err != nil {
+		return err
+	}
+	err = prettify("year", book.Year, color.FgCyan, "4")
+	if err != nil {
+		return err
+	}
+	err = prettify("size", fsize, color.FgGreen, "6")
+	if err != nil {
+		return err
+	}
+	err = prettify("type", book.Extension, color.FgRed, "4")
+	if err != nil {
+		return err
+	}
+	fmt.Println()
+
+	return nil
 }
 
 // formatTitle shortens the title of a Book down to
