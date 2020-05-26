@@ -61,6 +61,7 @@ type SearchOptions struct {
 	RequireAuthor bool
 	Extension     string
 	Year          int
+	Publisher     string
 }
 
 // GetDetailsOptions are the optional parameters available for the GetDetails
@@ -72,6 +73,7 @@ type GetDetailsOptions struct {
 	RequireAuthor bool
 	Extension     string
 	Year          int
+	Publisher     string
 }
 
 // Search sends a query to the search.php page hosted by gen.lib.rus.ec(or any
@@ -118,6 +120,7 @@ func Search(options *SearchOptions) ([]*Book, error) {
 		RequireAuthor: options.RequireAuthor,
 		Extension:     options.Extension,
 		Year:          options.Year,
+		Publisher:     options.Publisher,
 	})
 	if err != nil {
 		return nil, err
@@ -163,6 +166,11 @@ func GetDetails(options *GetDetailsOptions) ([]*Book, error) {
 				return nil, err
 			}
 			if options.Year != y {
+				continue
+			}
+		}
+		if options.Publisher != "" {
+			if !strings.Contains(book.Publisher, options.Publisher) {
 				continue
 			}
 		}
