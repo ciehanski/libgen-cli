@@ -7,7 +7,7 @@ on:
     branches:
       - '*'
 jobs:
-  test:
+  build:
     strategy:
       matrix:
         go-version: [1.13.x, 1.14.x]
@@ -16,13 +16,13 @@ jobs:
     steps:
     - name: Install Go
       id: install-go
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v2.0.3
       with:
         go-version: ${{ matrix.go-version }}
 
     - name: Checkout Code
       id: checkout-code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2.1.1
 
     - name: Install Dependencies
       id: install-deps
@@ -30,11 +30,7 @@ jobs:
 
     - name: Build
       id: build
-      run: |
-        go build -o artifacts/libgen-cli-linux main.go
-        GOOS=darwin GOARCH=amd64 go build -o artifacts/libgen-cli-macos main.go
-        GOOS=windows GOARCH=amd64 go build -o artifacts/libgen-cli-windows.exe main.go
-        GOOS=freebsd GOARCH=amd64 go build -o artifacts/libgen-cli-freebsd main.go
+      run: make build-travis
 
     - name: Test
       id: test
@@ -48,62 +44,11 @@ jobs:
         GO111MODULE=off go get -u github.com/mattn/goveralls
         $(go env GOPATH)/bin/goveralls -service=github -coverprofile=profile.cov
 
-    - name: Upload Linux Artifact
-      id: upload-linux-artifact
+    - name: Upload Artifacts
+      id: upload-artifacts
       continue-on-error: true
       if: success() || failure()
-      uses: actions/upload-artifact@v1.0.0
+      uses: actions/upload-artifact@v2
       with:
-        name: libgen-cli-linux
+        name: libgen-cli-artifacts
         path: artifacts
-
-    - name: Upload MacOS Artifact
-      id: upload-macos-artifact
-      continue-on-error: true
-      if: success() || failure()
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: libgen-cli-macos
-        path: artifacts
-
-    - name: Upload Windows Artifact
-      id: upload-windows-artifact
-      continue-on-error: true
-      if: success() || failure()
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: libgen-cli-windows.exe
-        path: artifacts
-
-    - name: Upload FreeBSD Artifact
-      id: upload-freebsd-artifact
-      continue-on-error: true
-      if: success() || failure()
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: libgen-cli-freebsd
-        path: artifacts
-
-#    - name: Create Release
-#      id: create-release
-#      if: success() && github.ref == 'refs/heads/master'
-#      uses: actions/create-release@v1.0.0
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#      with:
-#        tag_name: ${{ github.ref }}
-#        release_name: ${{ github.ref }}
-#        draft: true
-#        prerelease: false
-#
-#    - name: Upload Release Assets
-#      id: upload-release-assets
-#      if: success() && github.ref == 'refs/heads/master'
-#      uses: actions/upload-release-asset@v1.0.1
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#      with:
-#        upload_url: ${{ steps.create-release.outputs.upload_url }}
-#        asset_path: ./libgen-cli-$GOOS
-#        asset_name: libgen-cli-$GOOS
-#        asset_content_type: application/octet-stream
