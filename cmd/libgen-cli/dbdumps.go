@@ -102,10 +102,10 @@ var dbdumpsCmd = &cobra.Command{
 			}
 		}
 
-		fmt.Printf("Download started for: %s\n", libgen.RemoveQuotes(selectedDbdump))
+		fmt.Printf("Download starting for: %s\n", libgen.RemoveQuotes(selectedDbdump))
 
 		if err := libgen.DownloadDbdump(selectedDbdump, output); err != nil {
-			fmt.Printf("error download dbdump: %v\n", err)
+			fmt.Printf("error downloading dbdump: %v\n", err)
 			os.Exit(1)
 		}
 
