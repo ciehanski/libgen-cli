@@ -74,6 +74,12 @@ Filter results by year:
 libgen search kubernetes -y 2019
 ```
 
+Filter by the publisher's name:
+
+```bash
+libgen search kubernetes -p "Michael Joseph"
+```
+
 #### Download:
 
 The _download_ command will allow you to download a specific book if already 
