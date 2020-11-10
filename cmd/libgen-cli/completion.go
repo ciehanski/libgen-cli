@@ -203,7 +203,9 @@ __{{.Name}}_convert_bash_to_zsh() {
     -e "s/${LWORD}compopt${RWORD}/__cobra_compopt/g" \
     -e "s/${LWORD}declare${RWORD}/builtin declare/g" \
     -e "s/\\\$(type${RWORD}/\$(__cobra_type/g" \
-    <<'BASH_COMPLETION_EOF'`
+    <<'BASH_COMPLETION_EOF'
+
+    `
 
 	zshTail = `BASH_COMPLETION_EOF
 }
