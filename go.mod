@@ -3,7 +3,7 @@ module github.com/ciehanski/libgen-cli
 go 1.14
 
 require (
-	github.com/cheggaaa/pb/v3 v3.0.5
+	github.com/cheggaaa/pb/v3 v3.0.6
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/dustin/go-humanize v1.0.1-0.20200219035652-afde56e7acac
 	github.com/fatih/color v1.9.0
