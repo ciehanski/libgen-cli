@@ -20,20 +20,20 @@ import "net/url"
 // querying against Library Genesis.
 var SearchMirrors = []url.URL{
 	{
-		Scheme: "http",
-		Host:   "gen.lib.rus.ec",
-	},
-	{
 		Scheme: "https",
 		Host:   "libgen.is",
 	},
 	{
 		Scheme: "https",
-		Host:   "libgen.unblockit.red",
+		Host:   "libgen.rs",
+	},
+	{
+		Scheme: "https",
+		Host:   "libgen.st",
 	},
 	{
 		Scheme: "http",
-		Host:   "libgen.unblockall.org",
+		Host:   "gen.lib.rus.ec",
 	},
 	{
 		Scheme: "https",
