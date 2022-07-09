@@ -10,18 +10,18 @@ jobs:
   build:
     strategy:
       matrix:
-        go-version: [1.13.x, 1.14.x]
+        go-version: [1.13, 1.14, 1.15, 1.16, 1.17, 1.18]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go
       id: install-go
-      uses: actions/setup-go@v2.0.3
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go-version }}
     - name: Checkout Code
       id: checkout-code
-      uses: actions/checkout@v2.1.1
+      uses: actions/checkout@v3
     - name: Install Dependencies
       id: install-deps
       run: go mod download
@@ -36,21 +36,22 @@ jobs:
       with:
         name: libgen-cli-artifacts
         path: artifacts
+
   test:
     strategy:
       matrix:
-        go-version: [1.13.x, 1.14.x]
+        go-version: [1.18]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Install Go
       id: install-go
-      uses: actions/setup-go@v2.0.3
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go-version }}
     - name: Checkout Code
       id: checkout-code
-      uses: actions/checkout@v2.1.1
+      uses: actions/checkout@v3
     - name: Install Dependencies
       id: install-deps
       run: go mod download
@@ -62,5 +63,5 @@ jobs:
       env:
         COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        GO111MODULE=off go get -u github.com/mattn/goveralls
-        $(go env GOPATH)/bin/goveralls -service=github -coverprofile=profile.cov
+        go install github.com/mattn/goveralls@latest
+        goveralls -service=github -coverprofile=profile.cov

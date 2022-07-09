@@ -5,7 +5,6 @@
 // You may obtain a copy of the License at
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
-//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,7 +49,7 @@ var downloadAllCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("error getting require-author flag: %v\n", err)
 		}
-		extension, err := cmd.Flags().GetString("extension")
+		extension, err := cmd.Flags().GetStringSlice("extension")
 		if err != nil {
 			fmt.Printf("error getting extension flag: %v\n", err)
 		}
@@ -117,7 +116,7 @@ func init() {
 		"how many query results are displayed.")
 	downloadAllCmd.Flags().BoolP("require-author", "a", false, "controls if the query "+
 		"results will return any media without a listed author.")
-	downloadAllCmd.Flags().StringP("extension", "e", "", "controls if the query results "+
+	downloadAllCmd.Flags().StringSliceP("extension", "e", []string{""}, "controls if the query results "+
 		"will return any media with a certain file extension.")
 	downloadAllCmd.Flags().StringP("output", "o", "", "where you want libgen-cli to "+
 		"save your download.")

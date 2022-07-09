@@ -55,7 +55,7 @@ var searchCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("error getting require-author flag: %v\n", err)
 		}
-		extension, err := cmd.Flags().GetString("extension")
+		extension, err := cmd.Flags().GetStringSlice("extension")
 		if err != nil {
 			fmt.Printf("error getting extension flag: %v\n", err)
 		}
@@ -78,9 +78,10 @@ var searchCmd = &cobra.Command{
 		fmt.Printf("++ Searching for: %s\n", searchQuery)
 
 		var books []*libgen.Book
+		var searchMirror = libgen.GetWorkingMirror(libgen.SearchMirrors)
 		books, err = libgen.Search(&libgen.SearchOptions{
 			Query:         searchQuery,
-			SearchMirror:  libgen.GetWorkingMirror(libgen.SearchMirrors),
+			SearchMirror:  searchMirror,
 			Results:       results,
 			Print:         true,
 			RequireAuthor: requireAuthor,
@@ -93,7 +94,7 @@ var searchCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		if len(books) == 0 {
-			fmt.Print("\nNo results found.\n")
+			fmt.Printf("\nNo results found from: %s.\n", searchMirror.String())
 			os.Exit(1)
 		}
 
@@ -207,7 +208,7 @@ func init() {
 		"query results are displayed.")
 	searchCmd.Flags().BoolP("require-author", "a", false, "controls "+
 		"if the query results will return any media without a listed author.")
-	searchCmd.Flags().StringP("extension", "e", "", "controls if the query "+
+	searchCmd.Flags().StringSliceP("extension", "e", []string{""}, "controls if the query "+
 		"results will return any media with a certain file extension.")
 	searchCmd.Flags().StringP("output", "o", "", "where you want "+
 		"libgen-cli to save your download.")

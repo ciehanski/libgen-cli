@@ -17,18 +17,16 @@ package libgen
 import "time"
 
 const (
-	Version           = "v1.0.7"
+	Version           = "v1.0.8"
 	SearchHref        = "<a href='book/index.php.+</a>"
 	SearchMD5         = "[A-Z0-9]{32}"
-	booksdlReg        = "http://80.82.78.13/get\\.php\\?md5=\\w{32}\\&key=\\w{16}&mirr=1"
-	bokReg            = `\/dl\/\d{6}\/\w{6}`
+	booksdlReg        = `https:\/\/libgen\.rocks\/get\.php\?md5=\w{32}&key=\w{16}`
+	libraryLolReg     = `http:\/\/62\.182\.86\.140\/main\/\d{7}\/\w{32}\/.+?(gz|pdf|rar|djvu|epub|chm)`
 	dbdumpReg         = `(["])(.*?\.(rar|sql.gz))"`
-	bokDownloadLimit  = "WARNING: There are more than 5 downloads from your IP"
-	nineThreeReg      = `\/main\/\d{1}\/[A-Za-z0-9]{32}\/.+?(gz|pdf|rar|djvu|epub|chm)`
 	JSONQuery         = "id,title,author,filesize,extension,md5,year,language,pages,publisher,edition,coverurl"
 	TitleMaxLength    = 68
 	AuthorMaxLength   = 25
-	HTTPClientTimeout = time.Second * 10
+	HTTPClientTimeout = time.Second * 15
 	//UploadUsername    = "genesis"
 	//UploadPassword    = "upload"
 	//libgenPwReg     = `http://libgen.pw/item/detail/id/\d*$`

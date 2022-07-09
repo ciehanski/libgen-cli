@@ -4,7 +4,6 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
@@ -59,7 +58,7 @@ type SearchOptions struct {
 	Results       int
 	Print         bool
 	RequireAuthor bool
-	Extension     string
+	Extension     []string
 	Year          int
 	Publisher     string
 }
@@ -71,7 +70,7 @@ type GetDetailsOptions struct {
 	SearchMirror  url.URL
 	Print         bool
 	RequireAuthor bool
-	Extension     string
+	Extension     []string
 	Year          int
 	Publisher     string
 }
@@ -100,7 +99,7 @@ func Search(options *SearchOptions) ([]*Book, error) {
 	q.Set("lg_topic", "libgen")
 	q.Set("open", "0")
 	q.Set("view", "simple")
-	q.Set("res", string(res))
+	q.Set("res", fmt.Sprint(res))
 	q.Set("phrase", "1")
 	q.Set("column", "def")
 	options.SearchMirror.RawQuery = q.Encode()
@@ -157,8 +156,12 @@ func GetDetails(options *GetDetailsOptions) ([]*Book, error) {
 		if options.RequireAuthor && book.Author == "" {
 			continue
 		}
-		if options.Extension != "" && options.Extension != book.Extension {
-			continue
+		if len(options.Extension) > 0 {
+			for _, ext := range options.Extension {
+				if ext != book.Extension {
+					continue
+				}
+			}
 		}
 		if options.Year != 0 {
 			y, err := strconv.Atoi(book.Year)

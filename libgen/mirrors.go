@@ -20,20 +20,20 @@ import "net/url"
 // querying against Library Genesis.
 var SearchMirrors = []url.URL{
 	{
-		Scheme: "http",
-		Host:   "gen.lib.rus.ec",
-	},
-	{
 		Scheme: "https",
 		Host:   "libgen.is",
 	},
 	{
 		Scheme: "https",
-		Host:   "libgen.unblockit.red",
+		Host:   "libgen.rs",
+	},
+	{
+		Scheme: "https",
+		Host:   "libgen.st",
 	},
 	{
 		Scheme: "http",
-		Host:   "libgen.unblockall.org",
+		Host:   "gen.lib.rus.ec",
 	},
 	{
 		Scheme: "https",
@@ -44,18 +44,12 @@ var SearchMirrors = []url.URL{
 // DownloadMirrors contains all valid and tested mirrors used for
 // downloading content from Library Genesis.
 var DownloadMirrors = []url.URL{
-	// booksdl.org no longer used by libgen.
-	// New mirror URL/IP: 80.82.78.13
 	{
 		Scheme: "http",
-		Host:   "80.82.78.13",
+		Host:   "62.182.86.140",
 	},
 	{
 		Scheme: "https",
-		Host:   "b-ok.cc",
-	},
-	{
-		Scheme: "http",
-		Host:   "93.174.95.29",
+		Host:   "libgen.rocks",
 	},
 }
