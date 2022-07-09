@@ -48,10 +48,14 @@ Filter the amount of results displayed:
 $ libgen search kubernetes -r 5
 ```
 
-Filter by file extension:
+Filter by file extension(s):
 
 ```bash
 $ libgen search kubernetes -e pdf
+```
+
+```bash
+$ libgen search kubernetes -e "pdf,epub"
 ```
 
 Specify an output path:
@@ -178,5 +182,3 @@ TO USE AT YOUR OWN RISK. Once again, ALL files available here are for EDUCATION 
 
 ## License
 - Apache License 2.0
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fciehanski%2Flibgen-cli.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fciehanski%2Flibgen-cli?ref=badge_large)
