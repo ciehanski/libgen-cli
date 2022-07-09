@@ -78,9 +78,10 @@ var searchCmd = &cobra.Command{
 		fmt.Printf("++ Searching for: %s\n", searchQuery)
 
 		var books []*libgen.Book
+		var searchMirror = libgen.GetWorkingMirror(libgen.SearchMirrors)
 		books, err = libgen.Search(&libgen.SearchOptions{
 			Query:         searchQuery,
-			SearchMirror:  libgen.GetWorkingMirror(libgen.SearchMirrors),
+			SearchMirror:  searchMirror,
 			Results:       results,
 			Print:         true,
 			RequireAuthor: requireAuthor,
@@ -93,7 +94,7 @@ var searchCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		if len(books) == 0 {
-			fmt.Print("\nNo results found.\n")
+			fmt.Printf("\nNo results found from: %s.\n", searchMirror.String())
 			os.Exit(1)
 		}
 
