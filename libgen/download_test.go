@@ -56,30 +56,6 @@ func TestGetDownloadURL(t *testing.T) {
 	}
 }
 
-func TestGetBokDownloadURL(t *testing.T) {
-	book, err := GetDetails(&GetDetailsOptions{
-		Hashes:       []string{"2F2DBA2A621B693BB95601C16ED680F8"},
-		SearchMirror: GetWorkingMirror(SearchMirrors),
-		Print:        false,
-	})
-	if err != nil {
-		t.Error(err)
-	}
-
-	if err := getBokDownloadURL(book[0]); err != nil {
-		if err.Error() != "download limit reached for b-ok.cc" {
-			t.Error(err)
-		}
-	}
-
-	if book[0].DownloadURL == "" {
-		t.Error("no valid url found")
-	}
-	if !strings.Contains(book[0].DownloadURL, "https://b-ok.cc/dl/436993/") {
-		t.Errorf("got: %s, expected: https://b-ok.cc/dl/436993/", book[0].DownloadURL)
-	}
-}
-
 func TestGetBooksdlDownloadURL(t *testing.T) {
 	book, err := GetDetails(&GetDetailsOptions{
 		Hashes:       []string{"2F2DBA2A621B693BB95601C16ED680F8"},
@@ -97,12 +73,12 @@ func TestGetBooksdlDownloadURL(t *testing.T) {
 	if book[0].DownloadURL == "" {
 		t.Error("no valid url found")
 	}
-	if !strings.Contains(book[0].DownloadURL, "http://80.82.78.13/get.php?md5=2f2dba2a621b693bb95601c16ed680f8&key=") {
-		t.Errorf("got: %s, expected: http://80.82.78.13/get.php?md5=2f2dba2a621b693bb95601c16ed680f8&key=", book[0].DownloadURL)
+	if !strings.Contains(book[0].DownloadURL, "https://libgen.rocks/get.php?md5=2f2dba2a621b693bb95601c16ed680f8&key=") {
+		t.Errorf("got: %s, expected: https://libgen.rocks/get.php?md5=2f2dba2a621b693bb95601c16ed680f8&key=", book[0].DownloadURL)
 	}
 }
 
-func TestGetNineThreeURL(t *testing.T) {
+func TestGetLibraryLolURL(t *testing.T) {
 	book, err := GetDetails(&GetDetailsOptions{
 		Hashes:       []string{"2F2DBA2A621B693BB95601C16ED680F8"},
 		SearchMirror: GetWorkingMirror(SearchMirrors),
@@ -112,15 +88,15 @@ func TestGetNineThreeURL(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err := getNineThreeURL(book[0]); err != nil {
+	if err := getLibraryLolURL(book[0]); err != nil {
 		t.Error(err)
 	}
 
 	if book[0].DownloadURL == "" {
 		t.Error("no valid url found")
 	}
-	if !strings.Contains(book[0].DownloadURL, "http://93.174.95.29") {
-		t.Errorf("got: %s, expected: http://93.174.95.29", book[0].DownloadURL)
+	if !strings.Contains(book[0].DownloadURL, "http://62.182.86.140") {
+		t.Errorf("got: %s, expected: http://62.182.86.140", book[0].DownloadURL)
 	}
 }
 
