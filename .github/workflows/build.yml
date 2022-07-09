@@ -33,7 +33,8 @@ jobs:
       continue-on-error: true
       if: success() || failure()
       uses: actions/upload-artifact@v2
-      with: name: libgen-cli-artifacts
+      with:
+        name: libgen-cli-artifacts
         path: artifacts
   test:
     strategy:
