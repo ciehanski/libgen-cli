@@ -55,7 +55,7 @@ var searchCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("error getting require-author flag: %v\n", err)
 		}
-		extension, err := cmd.Flags().GetString("extension")
+		extension, err := cmd.Flags().GetStringSlice("extension")
 		if err != nil {
 			fmt.Printf("error getting extension flag: %v\n", err)
 		}
@@ -207,7 +207,7 @@ func init() {
 		"query results are displayed.")
 	searchCmd.Flags().BoolP("require-author", "a", false, "controls "+
 		"if the query results will return any media without a listed author.")
-	searchCmd.Flags().StringP("extension", "e", "", "controls if the query "+
+	searchCmd.Flags().StringSliceP("extension", "e", []string{""}, "controls if the query "+
 		"results will return any media with a certain file extension.")
 	searchCmd.Flags().StringP("output", "o", "", "where you want "+
 		"libgen-cli to save your download.")
