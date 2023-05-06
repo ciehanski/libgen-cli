@@ -98,6 +98,18 @@ know the MD5 hash. See below for an example:
 $ libgen download 2F2DBA2A621B693BB95601C16ED680F8
 ```
 
+You can bulk a list of MD5s by passing it as a command line argument: 
+
+```bash
+$ libgen download 6B4B4F0073B92248EFAB34F100CA20D4 FAA323B98939EE385BB33A1A3B88AFCA
+```
+
+Download a text list of MD5s at once: 
+
+```bash
+cat list.txt | xargs libgen download
+```
+
 Specify an output path:
 
 ```bash

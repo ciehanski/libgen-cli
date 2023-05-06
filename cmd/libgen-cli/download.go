@@ -35,7 +35,7 @@ var downloadCmd = &cobra.Command{
 	Example: "libgen download 2F2DBA2A621B693BB95601C16ED680F8",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if len(args) != 1 {
+		if len(args) < 1 {
 			if err := cmd.Help(); err != nil {
 				fmt.Printf("error displaying CLI help: %v\n", err)
 			}
@@ -54,7 +54,11 @@ var downloadCmd = &cobra.Command{
 			fmt.Printf("error getting output flag: %v\n", err)
 		}
 
-		fmt.Printf("++ Searching for: %s\n", args[0])
+		if len(args) == 1 {
+			fmt.Printf("++ Searching for: %s\n", args[0])
+		} else {
+			fmt.Printf("++ Searching for: MD5s\n")
+		}
 
 		bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
 			Hashes:       args,
@@ -64,31 +68,35 @@ var downloadCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("error retrieving results from LibGen API: %v", err)
 		}
-		book := bookDetails[0]
 
-		fmt.Println(strings.Repeat("-", 80))
-		fmt.Printf("Download started for: %s by %s\n", book.Title, book.Author)
+		for _, book := range bookDetails {
 
-		if err := libgen.GetDownloadURL(book); err != nil {
-			fmt.Printf("error getting download URL: %v\n", err)
-			os.Exit(1)
-		}
-		if err := libgen.DownloadBook(book, output); err != nil {
-			fmt.Printf("error downloading %v: %v\n", book.Title, err)
-			os.Exit(1)
-		}
+			fmt.Println(strings.Repeat("-", 80))
+			fmt.Printf("Download started for: %s by %s\n", book.Title, book.Author)
 
-		if runtime.GOOS == "windows" {
-			_, err = fmt.Fprintf(color.Output, "\n%s %s by %s.%s", color.GreenString("[OK]"),
-				book.Title, book.Author, book.Extension)
-			if err != nil {
-				fmt.Printf("error writing to Windows os.Stdout: %v\n", err)
+			if err := libgen.GetDownloadURL(book); err != nil {
+				fmt.Printf("error getting download URL: %v\n", err)
 				os.Exit(1)
 			}
-		} else {
-			fmt.Printf("\n%s %s by %s.%s\n", color.GreenString("[OK]"),
-				book.Title, book.Author, book.Extension)
+			if err := libgen.DownloadBook(book, output); err != nil {
+				fmt.Printf("error downloading %v: %v\n", book.Title, err)
+				os.Exit(1)
+			}
+
+			if runtime.GOOS == "windows" {
+				_, err = fmt.Fprintf(color.Output, "\n%s %s by %s.%s", color.GreenString("[OK]"),
+					book.Title, book.Author, book.Extension)
+				if err != nil {
+					fmt.Printf("error writing to Windows os.Stdout: %v\n", err)
+					os.Exit(1)
+				}
+			} else {
+				fmt.Printf("\n%s %s by %s.%s\n", color.GreenString("[OK]"),
+					book.Title, book.Author, book.Extension)
+			}
+
 		}
+
 	},
 }
 
