@@ -17,12 +17,10 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"net/http"
 	"os"
-	"time"
 
-	"github.com/ciehanski/libgen-cli/cmd/libgen-cli"
+	libgen_cli "github.com/ciehanski/libgen-cli/cmd/libgen-cli"
 	"github.com/ciehanski/libgen-cli/libgen"
 )
 
@@ -38,8 +36,4 @@ func main() {
 		fmt.Printf("%v", err)
 		os.Exit(1)
 	}
-}
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
 }

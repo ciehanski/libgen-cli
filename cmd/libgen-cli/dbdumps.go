@@ -110,12 +110,12 @@ var dbdumpsCmd = &cobra.Command{
 		}
 
 		if runtime.GOOS == "windows" {
-			_, err = fmt.Fprintf(color.Output, "\n%s %s\n", color.GreenString("[OK]"), selectedDbdump)
+			_, err = fmt.Fprintf(color.Output, "%s %s\n", color.GreenString("[OK]"), selectedDbdump)
 			if err != nil {
 				fmt.Printf("error writing to Windows os.Stdout: %v\n", err)
 			}
 		} else {
-			fmt.Printf("\n%s %s\n", color.GreenString("[OK]"), selectedDbdump)
+			fmt.Printf("%s %s\n", color.GreenString("[OK]"), selectedDbdump)
 		}
 	},
 }

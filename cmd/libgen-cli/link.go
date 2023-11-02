@@ -45,6 +45,12 @@ var linkCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+        // Get flags
+		useIpfs, err := cmd.Flags().GetBool("ipfs-mirrors")
+		if err != nil {
+			fmt.Printf("error getting ipfs-mirrors flag: %v\n", err)
+		}
+
 		fmt.Printf("++ Retrieving download link for: %s\n", args[0])
 
 		bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
@@ -57,11 +63,16 @@ var linkCmd = &cobra.Command{
 		}
 		book := bookDetails[0]
 
-		if err := libgen.GetDownloadURL(book); err != nil {
+		if err := libgen.GetDownloadURL(book, useIpfs); err != nil {
 			fmt.Printf("error getting download URL: %v\n", err)
 			os.Exit(1)
 		}
 
-		fmt.Printf("\n%v\n", book.DownloadURL)
+		fmt.Printf("%v\n", book.DownloadURL)
 	},
+}
+
+func init() {
+	linkCmd.Flags().BoolP("ipfs-mirrors", "i", false, "enforces libgen-cli to download "+
+		"results via IPFS mirrors instead of HTTP(S) mirrors.")
 }

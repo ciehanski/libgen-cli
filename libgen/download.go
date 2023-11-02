@@ -76,6 +76,73 @@ func DownloadBook(book *Book, outputPath string) error {
 	return nil
 }
 
+//func DownloadBookIPFS(book *Book, outputPath string) error {
+//	var filesize int64
+//	filename := getBookFilename(book)
+//
+//	req, err := http.NewRequest("GET", book.DownloadURL, nil)
+//	if err != nil {
+//		return err
+//	}
+//	req.Header.Add("Accept-Encoding", "*")
+//	client := http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+//	r, err := client.Do(req)
+//	if err != nil {
+//		return err
+//	}
+//
+//	return nil
+//}
+
+// GetDownloadURL picks a random download mirror to download the specified
+// resource from.
+func GetDownloadURL(book *Book, useIpfs bool) error {
+	chosenMirror := DownloadMirrors[rand.Intn(len(DownloadMirrors))]
+
+	var x int
+	tries := 3
+	for tries >= x {
+		switch chosenMirror.Hostname() {
+		case "library.lol":
+            if useIpfs {
+			    if err := getLibraryLolURL(book, true); err != nil {
+                    return err
+                }
+            } else {
+			    if err := getLibraryLolURL(book, false); err != nil {
+			       	if err := getLibgenPMURL(book); err != nil {
+			       		return err
+			       	}
+                }
+            }
+		case "libgen.pm":
+            if !useIpfs {
+			    if err := getLibgenPMURL(book); err != nil {
+			        if err := getLibraryLolURL(book, false); err != nil {
+			       		return err
+			       	}
+                }
+            } else {
+                // No IPFS URLs on libgen.pm pages, fallback to 
+                // library.lol
+			    if err := getLibraryLolURL(book, true); err != nil {
+			    	return err
+			    }
+            }
+		}
+		if book.DownloadURL != "" {
+			break
+		}
+		// Increment tries
+		x++
+	}
+
+	if book.DownloadURL == "" {
+		return fmt.Errorf("unable to retrieve download link for desired resource")
+	}
+	return nil
+}
+
 // DownloadDbdump downloads the selected database dump from
 // Library Genesis.
 func DownloadDbdump(filename string, outputPath string) error {
@@ -115,46 +182,9 @@ func DownloadDbdump(filename string, outputPath string) error {
 	return nil
 }
 
-// GetDownloadURL picks a random download mirror to download the specified
-// resource from.
-// This is a hack that I don't like and needs to be revisited.
-func GetDownloadURL(book *Book) error {
-	chosenMirror := DownloadMirrors[rand.Intn(len(DownloadMirrors))]
-
-	var x int
-	tries := 3
-	for tries >= x {
-		switch chosenMirror.Hostname() {
-		case "62.182.86.140":
-			if err := getLibraryLolURL(book); err != nil {
-				if err := getBooksdlDownloadURL(book); err != nil {
-					return err
-
-				}
-			}
-		case "libgen.rocks":
-			if err := getBooksdlDownloadURL(book); err != nil {
-				if err = getLibraryLolURL(book); err != nil {
-					return err
-				}
-			}
-		}
-		if book.DownloadURL != "" {
-			break
-		}
-		// Increment tries
-		x++
-	}
-
-	if book.DownloadURL == "" {
-		return fmt.Errorf("unable to retrieve download link for desired resource")
-	}
-	return nil
-}
-
-func getLibraryLolURL(book *Book) error {
+func getLibraryLolURL(book *Book, useIpfs bool) error {
 	baseURL := &url.URL{
-		Scheme: "http",
+		Scheme: "https",
 		Host:   "library.lol",
 		Path:   "main/",
 	}
@@ -166,35 +196,41 @@ func getLibraryLolURL(book *Book) error {
 		return err
 	}
 
-	downloadURL := findMatch(libraryLolReg, b)
-	if downloadURL == nil {
-		return errors.New("no valid download LibraryLol download URL found")
-	}
+    downloadURL := []byte{}
+    if useIpfs {
+	    downloadURL = findMatch(libraryLolIPFSReg, b)
+	    if downloadURL == nil {
+	    	return errors.New("no valid download LibraryLol download URL found")
+	    }
+    } else {
+	    downloadURL = findMatch(libraryLolReg, b)
+	    if downloadURL == nil {
+	    	return errors.New("no valid download LibraryLol download URL found")
+	    }
+    }
 
 	book.DownloadURL = string(downloadURL)
 
 	return nil
 }
 
-func getBooksdlDownloadURL(book *Book) error {
+func getLibgenPMURL(book *Book) error {
 	baseURL := &url.URL{
 		Scheme: "https",
-		Host:   "cdn1.booksdl.org",
-		Path:   "ads.php",
+		Host:   "libgen.pm",
+        Path:   "ads",
 	}
-	q := baseURL.Query()
-	q.Set("md5", book.Md5)
-	baseURL.RawQuery = q.Encode()
-	book.PageURL = baseURL.String()
+	queryURL := baseURL.String() + book.Md5
+	book.PageURL = queryURL
 
-	b, err := getBody(baseURL.String())
+	b, err := getBody(queryURL)
 	if err != nil {
 		return err
 	}
 
-	downloadURL := findMatch(booksdlReg, b)
+	downloadURL := findMatch(libgenPMReg, b)
 	if downloadURL == nil {
-		return errors.New("no valid download Booksdl download URL found")
+		return errors.New("no valid LibgenPM download URL found")
 	}
 	book.DownloadURL = fmt.Sprintf("https://libgen.rocks/%s", string(downloadURL))
 

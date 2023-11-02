@@ -69,6 +69,10 @@ var downloadAllCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("error getting language flag: %v\n", err)
 		}
+		useIpfs, err := cmd.Flags().GetBool("ipfs-mirrors")
+		if err != nil {
+			fmt.Printf("error getting ipfs-mirrors flag: %v\n", err)
+		}
 
 		// Join args for complete search query in case
 		// it contains spaces
@@ -93,15 +97,16 @@ var downloadAllCmd = &cobra.Command{
 		var wg sync.WaitGroup
 		bChan := make(chan *libgen.Book, results)
 		for _, book := range books {
-			if err := libgen.GetDownloadURL(book); err != nil {
+			if err := libgen.GetDownloadURL(book, useIpfs); err != nil {
 				fmt.Printf("error getting download DownloadURL: %v\n", err)
 				continue
 			}
 			wg.Add(1)
 			bChan <- book
 			go func() {
-				if err := libgen.DownloadBook(<-bChan, output); err != nil {
-					fmt.Printf("error downloading %v: %v\n", book.Title, err)
+                curBook := <-bChan
+				if err := libgen.DownloadBook(curBook, output); err != nil {
+					fmt.Printf("error downloading %v: %v\n", curBook, err)
 				}
 				wg.Done()
 			}()
@@ -110,13 +115,13 @@ var downloadAllCmd = &cobra.Command{
 		close(bChan)
 
 		if runtime.GOOS == "windows" {
-			_, err = fmt.Fprintf(color.Output, "\n%s\n", color.GreenString("[DONE]"))
+			_, err = fmt.Fprintf(color.Output, "%s\n", color.GreenString("[DONE]"))
 			if err != nil {
 				fmt.Printf("error writing to Windows os.Stdout: %v\n", err)
 				os.Exit(1)
 			}
 		} else {
-			fmt.Printf("\n%s\n", color.GreenString("[DONE]"))
+			fmt.Printf("%s\n", color.GreenString("[DONE]"))
 		}
 	},
 }
@@ -136,4 +141,6 @@ func init() {
 		"results by the publisher provided")
 	downloadAllCmd.Flags().StringP("language", "l", "", "filters search query "+
 		"results by the language provided")
+	downloadAllCmd.Flags().BoolP("ipfs-mirrors", "i", false, "enforces libgen-cli to download "+
+		"results via IPFS mirrors instead of HTTP(S) mirrors.")
 }

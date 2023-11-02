@@ -53,6 +53,10 @@ var downloadCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("error getting output flag: %v\n", err)
 		}
+		useIpfs, err := cmd.Flags().GetBool("ipfs-mirrors")
+		if err != nil {
+			fmt.Printf("error getting ipfs-mirrors flag: %v\n", err)
+		}
 
 		if len(args) == 1 {
 			fmt.Printf("++ Searching for: %s\n", args[0])
@@ -74,7 +78,7 @@ var downloadCmd = &cobra.Command{
 			fmt.Println(strings.Repeat("-", 80))
 			fmt.Printf("Download started for: %s by %s\n", book.Title, book.Author)
 
-			if err := libgen.GetDownloadURL(book); err != nil {
+			if err := libgen.GetDownloadURL(book, useIpfs); err != nil {
 				fmt.Printf("error getting download URL: %v\n", err)
 				os.Exit(1)
 			}
@@ -84,14 +88,14 @@ var downloadCmd = &cobra.Command{
 			}
 
 			if runtime.GOOS == "windows" {
-				_, err = fmt.Fprintf(color.Output, "\n%s %s by %s.%s", color.GreenString("[OK]"),
+				_, err = fmt.Fprintf(color.Output, "%s %s by %s.%s", color.GreenString("[OK]"),
 					book.Title, book.Author, book.Extension)
 				if err != nil {
 					fmt.Printf("error writing to Windows os.Stdout: %v\n", err)
 					os.Exit(1)
 				}
 			} else {
-				fmt.Printf("\n%s %s by %s.%s\n", color.GreenString("[OK]"),
+				fmt.Printf("%s %s by %s.%s\n", color.GreenString("[OK]"),
 					book.Title, book.Author, book.Extension)
 			}
 
@@ -103,4 +107,6 @@ var downloadCmd = &cobra.Command{
 func init() {
 	downloadCmd.Flags().StringP("output", "o", "", "where you want "+
 		"libgen-cli to save your download.")
+	downloadCmd.Flags().BoolP("ipfs-mirrors", "i", false, "enforces libgen-cli to download "+
+		"results via IPFS mirrors instead of HTTP(S) mirrors.")
 }

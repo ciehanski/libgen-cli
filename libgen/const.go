@@ -17,11 +17,12 @@ package libgen
 import "time"
 
 const (
-	Version           = "v1.0.9"
+	Version           = "v1.1.0"
 	SearchHref        = "<a href='book/index.php.+</a>"
 	SearchMD5         = "[A-Z0-9]{32}"
-	booksdlReg        = `get\.php\?md5=\w{32}&key=\w{16}`
-	libraryLolReg     = `http:\/\/62\.182\.86\.140\/main\/\d{7}\/\w{32}\/.+?(gz|pdf|rar|djvu|epub|chm)`
+    libgenPMReg        = `get\.php\?md5=\w{32}&key=\w{16}`
+    libraryLolReg     = `https://download\.library\.lol/main/\d+/[A-Za-z0-9]+/[^"]+`
+	libraryLolIPFSReg = `https:\/\/gateway\.ipfs\.io\/ipfs\/[A-Za-z0-9_-]+(\?[^"]*)?`
 	dbdumpReg         = `(["])(.*?\.(rar|sql.gz))"`
 	JSONQuery         = "id,title,author,filesize,extension,md5,year,language,pages,publisher,edition,coverurl"
 	TitleMaxLength    = 68

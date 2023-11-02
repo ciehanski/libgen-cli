@@ -32,6 +32,10 @@ var SearchMirrors = []url.URL{
 		Host:   "libgen.st",
 	},
 	{
+		Scheme: "https",
+		Host:   "libgen.rocks",
+	},
+	{
 		Scheme: "http",
 		Host:   "gen.lib.rus.ec",
 	},
@@ -45,11 +49,11 @@ var SearchMirrors = []url.URL{
 // downloading content from Library Genesis.
 var DownloadMirrors = []url.URL{
 	{
-		Scheme: "http",
-		Host:   "62.182.86.140",
+		Scheme: "https",
+		Host:   "library.lol",
 	},
 	{
 		Scheme: "https",
-		Host:   "libgen.rocks",
+		Host:   "libgen.pm",
 	},
 }
