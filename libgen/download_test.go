@@ -29,7 +29,7 @@ func TestDownloadBook(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err := getLibraryLolURL(book[0]); err != nil {
+	if err := getLibraryLolURL(book[0], false); err != nil {
 		t.Error(err)
 	}
 	if err := DownloadBook(book[0], ""); err != nil {
@@ -47,7 +47,7 @@ func TestGetDownloadURL(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err := GetDownloadURL(book[0]); err != nil {
+	if err := GetDownloadURL(book[0], false); err != nil {
 		t.Error(err)
 	}
 	if book[0].DownloadURL == "" {
@@ -55,7 +55,7 @@ func TestGetDownloadURL(t *testing.T) {
 	}
 }
 
-func TestGetBooksdlDownloadURL(t *testing.T) {
+func TestLibgenPMDownloadURL(t *testing.T) {
 	t.Skipf("Skipping, does not pass in GitHub Actions")
 	book, err := GetDetails(&GetDetailsOptions{
 		Hashes:       []string{"1794743BB21D72736FFE64D66DCA9F0E"},
@@ -66,7 +66,7 @@ func TestGetBooksdlDownloadURL(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err := getBooksdlDownloadURL(book[0]); err != nil {
+	if err := getLibgenPMURL(book[0]); err != nil {
 		t.Error(err)
 	}
 
@@ -88,7 +88,7 @@ func TestGetLibraryLolURL(t *testing.T) {
 		t.Error(err)
 	}
 
-	if err := getLibraryLolURL(book[0]); err != nil {
+	if err := getLibraryLolURL(book[0], false); err != nil {
 		t.Error(err)
 	}
 
@@ -101,7 +101,7 @@ func TestGetLibraryLolURL(t *testing.T) {
 }
 
 func TestGetHref(t *testing.T) {
-	results := findMatch(booksdlReg, []byte(`
+	results := findMatch(libgenPMReg, []byte(`
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
