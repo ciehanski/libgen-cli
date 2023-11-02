@@ -53,13 +53,26 @@ var linkCmd = &cobra.Command{
 
 		fmt.Printf("++ Retrieving download link for: %s\n", args[0])
 
-		bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
+        searchMirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
+        bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
 			Hashes:       args,
-			SearchMirror: libgen.GetWorkingMirror(libgen.SearchMirrors),
+			SearchMirror: searchMirror,
 			Print:        false,
 		})
 		if err != nil {
-			log.Fatalf("error retrieving results from LibGen API: %v", err)
+            // If error, try another mirror before exiting
+            secondaryMirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
+            for secondaryMirror == searchMirror {
+                secondaryMirror = libgen.GetWorkingMirror(libgen.SearchMirrors)
+            }
+		    bookDetails, err = libgen.GetDetails(&libgen.GetDetailsOptions{
+		    	Hashes:       args,
+		    	SearchMirror: secondaryMirror,
+		    	Print:        false,
+		    })
+            if err != nil {
+			    log.Fatalf("error retrieving results from LibGen API: %v", err)
+            }
 		}
 		book := bookDetails[0]
 

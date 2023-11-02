@@ -64,13 +64,26 @@ var downloadCmd = &cobra.Command{
 			fmt.Printf("++ Searching for: MD5s\n")
 		}
 
-		bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
+        searchMirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
+        bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
 			Hashes:       args,
-			SearchMirror: libgen.GetWorkingMirror(libgen.SearchMirrors),
+			SearchMirror: searchMirror,
 			Print:        true,
 		})
 		if err != nil {
-			log.Fatalf("error retrieving results from LibGen API: %v", err)
+            // If error, try another mirror before exiting
+            secondaryMirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
+            for secondaryMirror == searchMirror {
+                secondaryMirror = libgen.GetWorkingMirror(libgen.SearchMirrors)
+            }
+		    bookDetails, err = libgen.GetDetails(&libgen.GetDetailsOptions{
+		    	Hashes:       args,
+		    	SearchMirror: secondaryMirror,
+		    	Print:        true,
+		    })
+            if err != nil {
+			    log.Fatalf("error retrieving results from LibGen API: %v", err)
+            }
 		}
 
 		for _, book := range bookDetails {
