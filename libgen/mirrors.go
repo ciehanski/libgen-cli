@@ -57,3 +57,11 @@ var DownloadMirrors = []url.URL{
 		Host:   "libgen.pm",
 	},
 }
+
+var UploadMirrors = []url.URL {
+    {
+        Scheme: "https",
+        Host:   "library.bz",
+        Path:   "/main/upload",
+    },
+}
