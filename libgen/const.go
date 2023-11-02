@@ -19,7 +19,7 @@ import "time"
 const (
 	Version           = "v1.1.0"
 	SearchHref        = "<a href='book/index.php.+</a>"
-	SearchMD5         = "[A-Z0-9]{32}"
+	SearchMD5         = "[A-Za-z0-9]{32}"
     libgenPMReg        = `get\.php\?md5=\w{32}&key=\w{16}`
     libraryLolReg     = `https://download\.library\.lol/main/\d+/[A-Za-z0-9]+/[^"]+`
 	libraryLolIPFSReg = `https:\/\/gateway\.ipfs\.io\/ipfs\/[A-Za-z0-9_-]+(\?[^"]*)?`

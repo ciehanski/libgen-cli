@@ -41,7 +41,7 @@ var linkCmd = &cobra.Command{
 		// Ensure provided entry is valid MD5 hash
 		re := regexp.MustCompile(libgen.SearchMD5)
 		if !re.MatchString(args[0]) {
-			fmt.Printf("\nPlease provide a valid MD5 hash\n")
+			fmt.Printf("Please provide a valid MD5 hash\n")
 			os.Exit(1)
 		}
 
