@@ -105,9 +105,16 @@ var downloadAllCmd = &cobra.Command{
 			bChan <- book
 			go func() {
                 curBook := <-bChan
-				if err := libgen.DownloadBook(curBook, output); err != nil {
-					fmt.Printf("error downloading %v: %v\n", curBook, err)
-				}
+                if useIpfs {
+		            if err := libgen.DownloadBookIPFS(curBook, output); err != nil {
+		            	fmt.Printf("error downloading %v: %v\n", curBook.Title, err)
+		            }
+                } else {
+				    if err := libgen.DownloadBook(curBook, output); err != nil {
+				    	fmt.Printf("error downloading %v: %v\n", curBook, err)
+				    }
+                }
+
 				wg.Done()
 			}()
 		}

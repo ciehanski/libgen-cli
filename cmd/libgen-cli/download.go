@@ -82,10 +82,17 @@ var downloadCmd = &cobra.Command{
 				fmt.Printf("error getting download URL: %v\n", err)
 				os.Exit(1)
 			}
-			if err := libgen.DownloadBook(book, output); err != nil {
-				fmt.Printf("error downloading %v: %v\n", book.Title, err)
-				os.Exit(1)
-			}
+            if useIpfs {
+		        if err := libgen.DownloadBookIPFS(book, output); err != nil {
+		        	fmt.Printf("error downloading %v: %v\n", book.Title, err)
+		        	os.Exit(1)
+		        }
+            } else {
+		        if err := libgen.DownloadBook(book, output); err != nil {
+		        	fmt.Printf("error downloading %v: %v\n", book.Title, err)
+		        	os.Exit(1)
+		        }
+            }
 
 			if runtime.GOOS == "windows" {
 				_, err = fmt.Fprintf(color.Output, "%s %s by %s.%s", color.GreenString("[OK]"),

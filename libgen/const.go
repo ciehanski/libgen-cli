@@ -28,6 +28,7 @@ const (
 	TitleMaxLength    = 68
 	AuthorMaxLength   = 25
 	HTTPClientTimeout = time.Second * 15
+    ipfsReg           = `/ipfs/([a-z0-9]+)`
 	//UploadUsername    = "genesis"
 	//UploadPassword    = "upload"
 	//libgenPwReg     = `http://libgen.pw/item/detail/id/\d*$`

@@ -16,6 +16,7 @@
 package libgen
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -27,6 +28,13 @@ import (
 	"strings"
 
 	"github.com/cheggaaa/pb/v3"
+	iface "github.com/ipfs/boxo/coreiface"
+	ipath "github.com/ipfs/boxo/coreiface/path"
+	"github.com/ipfs/kubo/config"
+	"github.com/ipfs/kubo/core"
+	"github.com/ipfs/kubo/core/coreapi"
+	"github.com/ipfs/kubo/core/node/libp2p"
+	"github.com/ipfs/kubo/repo/fsrepo"
 )
 
 // DownloadBook grabs the download DownloadURL for the book requested.
@@ -76,23 +84,92 @@ func DownloadBook(book *Book, outputPath string) error {
 	return nil
 }
 
-//func DownloadBookIPFS(book *Book, outputPath string) error {
-//	var filesize int64
-//	filename := getBookFilename(book)
-//
-//	req, err := http.NewRequest("GET", book.DownloadURL, nil)
-//	if err != nil {
-//		return err
-//	}
-//	req.Header.Add("Accept-Encoding", "*")
-//	client := http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
-//	r, err := client.Do(req)
-//	if err != nil {
-//		return err
-//	}
-//
-//	return nil
-//}
+// Heavily borrowed from https://github.com/ipfs/ipget as
+// documentation on creating an IPFS client via kubo to 
+// download is lacking
+func DownloadBookIPFS(book *Book, outputPath string) error {
+	filename := getBookFilename(book)
+    ctx := context.Context(context.Background())
+
+    // Create IPFS client
+    ipfs, err := getIPFSclient(ctx)
+    if err != nil {
+        return err
+    }
+
+    // Parse IPFS URL
+    ipfsPath, err := parseIPFSURL(book.DownloadURL)
+    if err != nil {
+        return err
+    }
+
+    ipfsNode, err := ipfs.Unixfs().Get(ctx, ipfsPath)
+    if err != nil {
+        return err
+    }
+    out, err := makeFile(outputPath, filename)
+    if err != nil {
+    	return err
+    }
+
+    var r io.Reader = ipfsNode.(io.Reader) 
+    _, err = io.Copy(out, r)
+    if err != nil {
+    	return err
+    }
+    
+    if err := out.Close(); err != nil {
+    	return err
+    }
+    if err := ipfsNode.Close(); err != nil {
+    	return err
+    }
+
+	return nil
+}
+
+func getIPFSclient(ctx context.Context) (iface.CoreAPI, error) {
+    // Create a new IPFS client.
+    defaultPath, err := config.PathRoot()
+	if err != nil {
+		return nil, err
+	}
+
+	// Open the repo
+	repo, err := fsrepo.Open(defaultPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Construct the IPFS node
+	node, err := core.NewNode(ctx, &core.BuildCfg{
+		Online:  true,
+		Routing: libp2p.DHTClientOption,
+		Repo:    repo,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+    // IPFS API client
+    ipfs, err := coreapi.NewCoreAPI(node)
+	if err == nil {
+		return ipfs, nil
+	}
+
+    return nil, err
+}
+
+func parseIPFSURL(path string) (ipath.Path, error) {
+    url := findMatch(ipfsReg, []byte(path))
+
+	ipfsPath := ipath.New(string(url))
+	if ipfsPath.IsValid() == nil {
+		return ipfsPath, nil
+	}
+
+    return nil, ipfsPath.IsValid() 
+}
 
 // GetDownloadURL picks a random download mirror to download the specified
 // resource from.
