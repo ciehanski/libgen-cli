@@ -18,7 +18,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -272,7 +272,7 @@ func getBody(baseURL string) ([]byte, error) {
 		return nil, fmt.Errorf("unable to reach to mirror %v: %v", baseURL, r.StatusCode)
 	}
 
-	b, err := ioutil.ReadAll(r.Body)
+	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		return nil, err
 	}
