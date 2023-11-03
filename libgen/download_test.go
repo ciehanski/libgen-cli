@@ -95,8 +95,8 @@ func TestGetLibraryLolURL(t *testing.T) {
 	if book[0].DownloadURL == "" {
 		t.Error("no valid url found")
 	}
-	if !strings.Contains(book[0].DownloadURL, "http://62.182.86.140") {
-		t.Errorf("got: %s, expected: http://62.182.86.140", book[0].DownloadURL)
+	if !strings.Contains(book[0].DownloadURL, "https://download.library.lol/main/1440000/1794743bb21d72736ffe64d66dca9f0e") {
+		t.Errorf(`got: %s, expected: https://download.library.lol/main/1440000/1794743bb21d72736ffe64d66dca9f0e`, book[0].DownloadURL)
 	}
 }
 

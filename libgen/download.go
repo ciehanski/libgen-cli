@@ -16,12 +16,12 @@
 package libgen
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
-	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -42,7 +42,12 @@ func DownloadBook(book *Book, outputPath string) error {
 		return err
 	}
 	req.Header.Add("Accept-Encoding", "*")
-	client := http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	client := http.Client{
+		Timeout: HTTPClientTimeout,
+		Transport: &http.Transport{
+			Proxy:           http.ProxyFromEnvironment,
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}}
 	r, err := client.Do(req)
 	if err != nil {
 		return err
@@ -105,8 +110,7 @@ func GetDownloadURL(book *Book, useIpfs bool) error {
 					}
 				}
 			} else {
-				// No IPFS URLs on libgen.pm pages, fallback to
-				// library.lol
+				// No IPFS URLs on libgen.pm pages, fallback to library.lol
 				if err := getLibraryLolURL(book, true); err != nil {
 					return err
 				}
@@ -165,12 +169,7 @@ func DownloadDbdump(filename string, outputPath string) error {
 }
 
 func getLibraryLolURL(book *Book, useIpfs bool) error {
-	baseURL := &url.URL{
-		Scheme: "https",
-		Host:   "library.lol",
-		Path:   "main/",
-	}
-	queryURL := baseURL.String() + book.Md5
+	queryURL := DownloadMirrors[0].String() + book.Md5
 	book.PageURL = queryURL
 
 	b, err := getBody(queryURL)
@@ -197,12 +196,7 @@ func getLibraryLolURL(book *Book, useIpfs bool) error {
 }
 
 func getLibgenPMURL(book *Book) error {
-	baseURL := &url.URL{
-		Scheme: "https",
-		Host:   "libgen.pm",
-		Path:   "ads",
-	}
-	queryURL := baseURL.String() + book.Md5
+	queryURL := DownloadMirrors[1].String() + book.Md5
 	book.PageURL = queryURL
 
 	b, err := getBody(queryURL)

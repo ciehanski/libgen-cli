@@ -22,26 +22,37 @@ var SearchMirrors = []url.URL{
 	{
 		Scheme: "https",
 		Host:   "libgen.is",
+		Path:   "search.php",
 	},
 	{
 		Scheme: "https",
 		Host:   "libgen.rs",
+		Path:   "search.php",
 	},
 	{
 		Scheme: "https",
 		Host:   "libgen.st",
+		Path:   "search.php",
 	},
 	{
 		Scheme: "https",
-		Host:   "libgen.rocks",
+		Host:   "libgen.gs",
+		Path:   "search.php",
 	},
+	//{
+	//	Scheme: "https",
+	//	Host:   "libgen.rocks",
+	//	Path:   "index.php",
+	//},
 	{
 		Scheme: "http",
 		Host:   "gen.lib.rus.ec",
+		Path:   "search.php",
 	},
 	{
 		Scheme: "https",
 		Host:   "93.174.95.27",
+		Path:   "search.php",
 	},
 }
 
@@ -51,10 +62,12 @@ var DownloadMirrors = []url.URL{
 	{
 		Scheme: "https",
 		Host:   "library.lol",
+		Path:   "main/",
 	},
 	{
 		Scheme: "https",
 		Host:   "libgen.pm",
+		Path:   "ads",
 	},
 }
 

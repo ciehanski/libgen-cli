@@ -83,7 +83,6 @@ type GetDetailsOptions struct {
 // hashes of matches found from the search query provided.
 func Search(options *SearchOptions) ([]*Book, error) {
 	// libgen search only allows query Results of 25, 50 or 100.
-	// We handle that here
 	var res int
 	switch {
 	case options.Results <= 25:
@@ -92,13 +91,6 @@ func Search(options *SearchOptions) ([]*Book, error) {
 		res = 50
 	default:
 		res = 100
-	}
-
-	// libgen.rocks uses index.php instead of search.php
-	if options.SearchMirror.Hostname() == "libgen.rocks" {
-		options.SearchMirror.Path = "index.php"
-	} else {
-		options.SearchMirror.Path = "search.php"
 	}
 
 	// Define DownloadURL with required query parameters
