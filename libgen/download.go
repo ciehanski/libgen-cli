@@ -43,7 +43,6 @@ func DownloadBook(book *Book, outputPath string) error {
 	}
 	req.Header.Add("Accept-Encoding", "*")
 	client := http.Client{
-		Timeout: HTTPClientTimeout,
 		Transport: &http.Transport{
 			Proxy:           http.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
