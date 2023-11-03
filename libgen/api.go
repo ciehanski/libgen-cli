@@ -94,12 +94,12 @@ func Search(options *SearchOptions) ([]*Book, error) {
 		res = 100
 	}
 
-    // libgen.rocks uses index.php instead of search.php
-    if options.SearchMirror.Hostname() == "libgen.rocks" {
-        options.SearchMirror.Path = "index.php"
-    } else {
-	    options.SearchMirror.Path = "search.php"
-    }
+	// libgen.rocks uses index.php instead of search.php
+	if options.SearchMirror.Hostname() == "libgen.rocks" {
+		options.SearchMirror.Path = "index.php"
+	} else {
+		options.SearchMirror.Path = "search.php"
+	}
 
 	// Define DownloadURL with required query parameters
 	q := options.SearchMirror.Query()

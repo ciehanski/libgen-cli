@@ -194,17 +194,17 @@ var searchCmd = &cobra.Command{
 			fmt.Println(err)
 			os.Exit(1)
 		}
-        if useIpfs {
-		    if err := libgen.DownloadBookIPFS(&selectedBook, output); err != nil {
-		    	fmt.Printf("error downloading %v: %v\n", selectedBook.Title, err)
-		    	os.Exit(1)
-		    }
-        } else {
-		    if err := libgen.DownloadBook(&selectedBook, output); err != nil {
-		    	fmt.Printf("error downloading %v: %v\n", selectedBook.Title, err)
-		    	os.Exit(1)
-		    }
-        }
+		if useIpfs {
+			if err := libgen.DownloadBookIPFS(&selectedBook, output); err != nil {
+				fmt.Printf("error downloading %v: %v\n", selectedBook.Title, err)
+				os.Exit(1)
+			}
+		} else {
+			if err := libgen.DownloadBook(&selectedBook, output); err != nil {
+				fmt.Printf("error downloading %v: %v\n", selectedBook.Title, err)
+				os.Exit(1)
+			}
+		}
 
 		if runtime.GOOS == "windows" {
 			_, err = fmt.Fprintf(color.Output, "%s %s by %s.%s", color.GreenString("[OK]"),

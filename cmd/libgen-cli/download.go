@@ -64,26 +64,26 @@ var downloadCmd = &cobra.Command{
 			fmt.Printf("++ Searching for: MD5s\n")
 		}
 
-        searchMirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
-        bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
+		searchMirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
+		bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
 			Hashes:       args,
 			SearchMirror: searchMirror,
 			Print:        true,
 		})
 		if err != nil {
-            // If error, try another mirror before exiting
-            secondaryMirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
-            for secondaryMirror == searchMirror {
-                secondaryMirror = libgen.GetWorkingMirror(libgen.SearchMirrors)
-            }
-		    bookDetails, err = libgen.GetDetails(&libgen.GetDetailsOptions{
-		    	Hashes:       args,
-		    	SearchMirror: secondaryMirror,
-		    	Print:        true,
-		    })
-            if err != nil {
-			    log.Fatalf("error retrieving results from LibGen API: %v", err)
-            }
+			// If error, try another mirror before exiting
+			secondaryMirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
+			for secondaryMirror == searchMirror {
+				secondaryMirror = libgen.GetWorkingMirror(libgen.SearchMirrors)
+			}
+			bookDetails, err = libgen.GetDetails(&libgen.GetDetailsOptions{
+				Hashes:       args,
+				SearchMirror: secondaryMirror,
+				Print:        true,
+			})
+			if err != nil {
+				log.Fatalf("error retrieving results from LibGen API: %v", err)
+			}
 		}
 
 		for _, book := range bookDetails {
@@ -95,17 +95,17 @@ var downloadCmd = &cobra.Command{
 				fmt.Printf("error getting download URL: %v\n", err)
 				os.Exit(1)
 			}
-            if useIpfs {
-		        if err := libgen.DownloadBookIPFS(book, output); err != nil {
-		        	fmt.Printf("error downloading %v: %v\n", book.Title, err)
-		        	os.Exit(1)
-		        }
-            } else {
-		        if err := libgen.DownloadBook(book, output); err != nil {
-		        	fmt.Printf("error downloading %v: %v\n", book.Title, err)
-		        	os.Exit(1)
-		        }
-            }
+			if useIpfs {
+				if err := libgen.DownloadBookIPFS(book, output); err != nil {
+					fmt.Printf("error downloading %v: %v\n", book.Title, err)
+					os.Exit(1)
+				}
+			} else {
+				if err := libgen.DownloadBook(book, output); err != nil {
+					fmt.Printf("error downloading %v: %v\n", book.Title, err)
+					os.Exit(1)
+				}
+			}
 
 			if runtime.GOOS == "windows" {
 				_, err = fmt.Fprintf(color.Output, "%s %s by %s.%s", color.GreenString("[OK]"),

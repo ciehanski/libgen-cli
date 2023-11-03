@@ -86,31 +86,31 @@ func GetDownloadURL(book *Book, useIpfs bool) error {
 	for tries >= x {
 		switch chosenMirror.Hostname() {
 		case "library.lol":
-            if useIpfs {
-			    if err := getLibraryLolURL(book, true); err != nil {
-                    return err
-                }
-            } else {
-			    if err := getLibraryLolURL(book, false); err != nil {
-			       	if err := getLibgenPMURL(book); err != nil {
-			       		return err
-			       	}
-                }
-            }
+			if useIpfs {
+				if err := getLibraryLolURL(book, true); err != nil {
+					return err
+				}
+			} else {
+				if err := getLibraryLolURL(book, false); err != nil {
+					if err := getLibgenPMURL(book); err != nil {
+						return err
+					}
+				}
+			}
 		case "libgen.pm":
-            if !useIpfs {
-			    if err := getLibgenPMURL(book); err != nil {
-			        if err := getLibraryLolURL(book, false); err != nil {
-			       		return err
-			       	}
-                }
-            } else {
-                // No IPFS URLs on libgen.pm pages, fallback to 
-                // library.lol
-			    if err := getLibraryLolURL(book, true); err != nil {
-			    	return err
-			    }
-            }
+			if !useIpfs {
+				if err := getLibgenPMURL(book); err != nil {
+					if err := getLibraryLolURL(book, false); err != nil {
+						return err
+					}
+				}
+			} else {
+				// No IPFS URLs on libgen.pm pages, fallback to
+				// library.lol
+				if err := getLibraryLolURL(book, true); err != nil {
+					return err
+				}
+			}
 		}
 		if book.DownloadURL != "" {
 			break
@@ -178,18 +178,18 @@ func getLibraryLolURL(book *Book, useIpfs bool) error {
 		return err
 	}
 
-    downloadURL := []byte{}
-    if useIpfs {
-	    downloadURL = findMatch(libraryLolIPFSReg, b)
-	    if downloadURL == nil {
-	    	return errors.New("no valid download LibraryLol download URL found")
-	    }
-    } else {
-	    downloadURL = findMatch(libraryLolReg, b)
-	    if downloadURL == nil {
-	    	return errors.New("no valid download LibraryLol download URL found")
-	    }
-    }
+	downloadURL := []byte{}
+	if useIpfs {
+		downloadURL = findMatch(libraryLolIPFSReg, b)
+		if downloadURL == nil {
+			return errors.New("no valid download LibraryLol download URL found")
+		}
+	} else {
+		downloadURL = findMatch(libraryLolReg, b)
+		if downloadURL == nil {
+			return errors.New("no valid download LibraryLol download URL found")
+		}
+	}
 
 	book.DownloadURL = string(downloadURL)
 
@@ -200,7 +200,7 @@ func getLibgenPMURL(book *Book) error {
 	baseURL := &url.URL{
 		Scheme: "https",
 		Host:   "libgen.pm",
-        Path:   "ads",
+		Path:   "ads",
 	}
 	queryURL := baseURL.String() + book.Md5
 	book.PageURL = queryURL

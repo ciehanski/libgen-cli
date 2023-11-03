@@ -45,7 +45,7 @@ var linkCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-        // Get flags
+		// Get flags
 		useIpfs, err := cmd.Flags().GetBool("ipfs-mirrors")
 		if err != nil {
 			fmt.Printf("error getting ipfs-mirrors flag: %v\n", err)
@@ -53,26 +53,26 @@ var linkCmd = &cobra.Command{
 
 		fmt.Printf("++ Retrieving download link for: %s\n", args[0])
 
-        searchMirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
-        bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
+		searchMirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
+		bookDetails, err := libgen.GetDetails(&libgen.GetDetailsOptions{
 			Hashes:       args,
 			SearchMirror: searchMirror,
 			Print:        false,
 		})
 		if err != nil {
-            // If error, try another mirror before exiting
-            secondaryMirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
-            for secondaryMirror == searchMirror {
-                secondaryMirror = libgen.GetWorkingMirror(libgen.SearchMirrors)
-            }
-		    bookDetails, err = libgen.GetDetails(&libgen.GetDetailsOptions{
-		    	Hashes:       args,
-		    	SearchMirror: secondaryMirror,
-		    	Print:        false,
-		    })
-            if err != nil {
-			    log.Fatalf("error retrieving results from LibGen API: %v", err)
-            }
+			// If error, try another mirror before exiting
+			secondaryMirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
+			for secondaryMirror == searchMirror {
+				secondaryMirror = libgen.GetWorkingMirror(libgen.SearchMirrors)
+			}
+			bookDetails, err = libgen.GetDetails(&libgen.GetDetailsOptions{
+				Hashes:       args,
+				SearchMirror: secondaryMirror,
+				Print:        false,
+			})
+			if err != nil {
+				log.Fatalf("error retrieving results from LibGen API: %v", err)
+			}
 		}
 		book := bookDetails[0]
 

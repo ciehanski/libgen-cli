@@ -58,10 +58,10 @@ var DownloadMirrors = []url.URL{
 	},
 }
 
-var UploadMirrors = []url.URL {
-    {
-        Scheme: "https",
-        Host:   "library.bz",
-        Path:   "/main/upload",
-    },
+var UploadMirrors = []url.URL{
+	{
+		Scheme: "https",
+		Host:   "library.bz",
+		Path:   "/main/upload",
+	},
 }

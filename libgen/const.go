@@ -20,15 +20,15 @@ const (
 	Version           = "v1.1.0"
 	SearchHref        = "<a href='book/index.php.+</a>"
 	SearchMD5         = "[A-Za-z0-9]{32}"
-    libgenPMReg        = `get\.php\?md5=\w{32}&key=\w{16}`
-    libraryLolReg     = `https://download\.library\.lol/main/\d+/[A-Za-z0-9]+/[^"]+`
+	libgenPMReg       = `get\.php\?md5=\w{32}&key=\w{16}`
+	libraryLolReg     = `https://download\.library\.lol/main/\d+/[A-Za-z0-9]+/[^"]+`
 	libraryLolIPFSReg = `https:\/\/gateway\.ipfs\.io\/ipfs\/[A-Za-z0-9_-]+(\?[^"]*)?`
 	dbdumpReg         = `(["])(.*?\.(rar|sql.gz))"`
 	JSONQuery         = "id,title,author,filesize,extension,md5,year,language,pages,publisher,edition,coverurl"
 	TitleMaxLength    = 68
 	AuthorMaxLength   = 25
 	HTTPClientTimeout = time.Second * 15
-    ipfsReg           = `/ipfs/([a-z0-9]+)`
+	ipfsReg           = `/ipfs/([a-z0-9]+)`
 	//UploadUsername    = "genesis"
 	//UploadPassword    = "upload"
 	//libgenPwReg     = `http://libgen.pw/item/detail/id/\d*$`

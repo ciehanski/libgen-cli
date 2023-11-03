@@ -26,44 +26,43 @@ import (
 // download is lacking
 func DownloadBookIPFS(book *Book, outputPath string) error {
 	filename := getBookFilename(book)
-    ctx := context.Context(context.Background())
+	ctx := context.Context(context.Background())
 
-    // Create IPFS client
-    ipfs, err := setupIPFSclient(ctx)
-    if err != nil {
-        return err
-    }
+	// Create IPFS client
+	ipfs, err := setupIPFSclient(ctx)
+	if err != nil {
+		return err
+	}
+	// Parse IPFS URL
+	ipfsPath, err := parseIPFSurl(book.DownloadURL)
+	if err != nil {
+		return err
+	}
 
-    // Parse IPFS URL
-    ipfsPath, err := parseIPFSurl(book.DownloadURL)
-    if err != nil {
-        return err
-    }
+	// Get IPFS node from URL
+	ipfsNode, err := ipfs.Unixfs().Get(ctx, ipfsPath)
+	if err != nil {
+		return err
+	}
+	defer ipfsNode.Close()
 
-    // Get IPFS node from URL
-    ipfsNode, err := ipfs.Unixfs().Get(ctx, ipfsPath)
-    if err != nil {
-        return err
-    }
-    defer ipfsNode.Close()
+	// Create progress bar
+	nodeSize, err := ipfsNode.Size()
+	if err != nil {
+		return err
+	}
+	bar := pb.New64(nodeSize).Start()
 
-    // Create progress bar
-    nodeSize, err := ipfsNode.Size()
-    if err != nil {
-        return err
-    }
-    bar := pb.New64(nodeSize).Start()
-
-    // Copy IPFS node to output file
-    if err := makeIPFSfile(ipfsNode, filepath.Join(outputPath, filename), bar); err != nil {
-        return err
-    }
+	// Copy IPFS node to output file
+	if err := makeIPFSfile(ipfsNode, filepath.Join(outputPath, filename), bar); err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func makeIPFSfile(ipfsNode files.Node, fpath string, bar *pb.ProgressBar) error {
-    switch nd := ipfsNode.(type) {
+	switch nd := ipfsNode.(type) {
 	case *files.Symlink:
 		return os.Symlink(nd.Target, fpath)
 	case files.File:
@@ -111,21 +110,21 @@ func setupIPFSclient(ctx context.Context) (iface.CoreAPI, error) {
 		return nil, err
 	}
 
-    // Create temp IPFS dir
+	// Create temp IPFS dir
 	ipfsDir, err := os.MkdirTemp("", "libgen-cli-ipfs")
 	if err != nil {
 		return nil, err
 	}
-    defer os.RemoveAll(ipfsDir)
+	defer os.RemoveAll(ipfsDir)
 
-    // Setup IPFS identity
-    icfg, err := setupIPFSident()
-    if err != nil {
+	// Setup IPFS identity
+	icfg, err := setupIPFSident()
+	if err != nil {
 		return nil, err
-    }
+	}
 
-    // Init IPFS repo
-    localRepo, err := initIPFSrepo(ipfsDir, icfg)
+	// Init IPFS repo
+	localRepo, err := initIPFSrepo(ipfsDir, icfg)
 
 	// Construct the temp IPFS node
 	node, err := core.NewNode(ctx, &core.BuildCfg{
@@ -137,29 +136,29 @@ func setupIPFSclient(ctx context.Context) (iface.CoreAPI, error) {
 		return nil, err
 	}
 
-    // IPFS API client
-    ipfs, err := coreapi.NewCoreAPI(node)
+	// IPFS API client
+	ipfs, err := coreapi.NewCoreAPI(node)
 	if err == nil {
 		return ipfs, nil
 	}
 
-    return nil, err
+	return nil, err
 }
 
 func initIPFSrepo(ipfsDir string, icfg *config.Config) (repo.Repo, error) {
-    // Init IPFS local repo 
-    err := fsrepo.Init(ipfsDir, icfg)
-    if err != nil {
-		return nil, err
-    }
-
-	// Open the repo
-    localRepo, err := fsrepo.Open(ipfsDir)
+	// Init IPFS local repo
+	err := fsrepo.Init(ipfsDir, icfg)
 	if err != nil {
 		return nil, err
 	}
 
-    return localRepo, nil
+	// Open the repo
+	localRepo, err := fsrepo.Open(ipfsDir)
+	if err != nil {
+		return nil, err
+	}
+
+	return localRepo, nil
 }
 
 func setupIPFSident() (*config.Config, error) {
@@ -172,14 +171,14 @@ func setupIPFSident() (*config.Config, error) {
 
 	icfg, err := config.InitWithIdentity(identity)
 	if err != nil {
-        return nil, err
+		return nil, err
 	}
 
 	// Configure the temporary node
 	icfg.Routing.Type = config.NewOptionalString("dhtclient")
 	icfg.Datastore.NoSync = true
 
-    return icfg, nil
+	return icfg, nil
 }
 
 func setupIPFSplugins(path string) error {
@@ -201,12 +200,12 @@ func setupIPFSplugins(path string) error {
 }
 
 func parseIPFSurl(path string) (ipath.Path, error) {
-    url := findMatch(ipfsReg, []byte(path))
+	url := findMatch(ipfsReg, []byte(path))
 
 	ipfsPath := ipath.New(string(url))
 	if ipfsPath.IsValid() == nil {
 		return ipfsPath, nil
 	}
 
-    return nil, ipfsPath.IsValid() 
+	return nil, ipfsPath.IsValid()
 }
