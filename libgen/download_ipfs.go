@@ -11,7 +11,7 @@ import (
 	iface "github.com/ipfs/boxo/coreiface"
 	"github.com/ipfs/boxo/coreiface/options"
 	ipath "github.com/ipfs/boxo/coreiface/path"
-	files "github.com/ipfs/go-ipfs-files"
+	ifiles "github.com/ipfs/go-ipfs-files"
 	"github.com/ipfs/kubo/config"
 	"github.com/ipfs/kubo/core"
 	"github.com/ipfs/kubo/core/coreapi"
@@ -53,19 +53,26 @@ func DownloadBookIPFS(book *Book, outputPath string) error {
 	}
 	bar := pb.New64(nodeSize).Start()
 
+	var outPath string
+	if outputPath == "" {
+		outPath = filename
+	} else {
+		outPath = filepath.Join(outputPath, filename)
+	}
+
 	// Copy IPFS node to output file
-	if err := makeIPFSfile(ipfsNode, filepath.Join(outputPath, filename), bar); err != nil {
+	if err := makeIPFSfile(ipfsNode, outPath, bar); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func makeIPFSfile(ipfsNode files.Node, fpath string, bar *pb.ProgressBar) error {
+func makeIPFSfile(ipfsNode ifiles.Node, fpath string, bar *pb.ProgressBar) error {
 	switch nd := ipfsNode.(type) {
-	case *files.Symlink:
+	case *ifiles.Symlink:
 		return os.Symlink(nd.Target, fpath)
-	case files.File:
+	case ifiles.File:
 		f, err := os.Create(fpath)
 		defer f.Close()
 		if err != nil {
@@ -81,7 +88,7 @@ func makeIPFSfile(ipfsNode files.Node, fpath string, bar *pb.ProgressBar) error 
 			return err
 		}
 		return nil
-	case files.Directory:
+	case ifiles.Directory:
 		err := os.Mkdir(fpath, 0777)
 		if err != nil {
 			return err
