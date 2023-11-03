@@ -16,15 +16,12 @@ jobs:
     steps:
     - name: Install Go
       id: install-go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v4
       with:
         go-version: ${{ matrix.go-version }}
     - name: Checkout Code
       id: checkout-code
-      uses: actions/checkout@v3
-    - name: Install Dependencies
-      id: install-deps
-      run: go mod download
+      uses: actions/checkout@v4
     - name: Build
       id: build
       run: make build-travis
@@ -46,15 +43,12 @@ jobs:
     steps:
     - name: Install Go
       id: install-go
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v4
       with:
         go-version: ${{ matrix.go-version }}
     - name: Checkout Code
       id: checkout-code
-      uses: actions/checkout@v3
-    - name: Install Dependencies
-      id: install-deps
-      run: go mod download
+      uses: actions/checkout@v4
     - name: Test
       id: test
       run: go test ./... -v -race -covermode atomic -coverprofile=profile.cov
