@@ -16,7 +16,7 @@ package libgen_cli
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"runtime"
@@ -52,15 +52,15 @@ var dbdumpsCmd = &cobra.Command{
 
 		fmt.Println("++ Retrieving all database dumps...")
 
-		mirror := libgen.GetWorkingMirror(libgen.SearchMirrors)
+		mirror := libgen.GetWorkingMirror(libgen.DbdumpsMirrors)
 
-		r, err := http.Get(mirror.String() + "/dbdumps/")
+		r, err := http.Get(mirror.String())
 		if err != nil {
 			fmt.Printf("error reaching mirror: %v\n", err)
 			os.Exit(1)
 		}
 
-		b, err := ioutil.ReadAll(r.Body)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
 			fmt.Printf("error reading response: %v\n", err)
 			os.Exit(1)
