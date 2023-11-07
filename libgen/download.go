@@ -238,8 +238,8 @@ func makeFile(outputPath, filename string) (*os.File, error) {
 		if mkErr != nil {
 			return nil, mkErr
 		}
-		// If output path was provided
 	} else {
+		// If output path was provided
 		if stat, err := os.Stat(outputPath); err == nil && stat.IsDir() {
 			out, err = os.Create(fmt.Sprintf("%s/%s", outputPath, filename))
 			if err != nil {
