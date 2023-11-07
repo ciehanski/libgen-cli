@@ -83,6 +83,6 @@ var DbdumpsMirrors = []url.URL{
         {
                 Scheme: "https",
                 Host:   "data.library.bz",
-                Path:   "/dbdumps/",
+                Path:   "/dbdumps",
         },
 }

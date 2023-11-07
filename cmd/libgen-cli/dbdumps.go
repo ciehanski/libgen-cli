@@ -21,6 +21,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/chzyer/readline"
 	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -86,6 +87,26 @@ var dbdumpsCmd = &cobra.Command{
 			Label:     "Select Database Dump",
 			Items:     dbdumps,
 			Templates: promptTemplate,
+                        Size:      35,
+                        IsVimMode: false,
+			Keys: &promptui.SelectKeys{
+				Next: promptui.Key{
+					Code:    readline.CharNext,
+					Display: "↓ (j)",
+				},
+				Prev: promptui.Key{
+					Code:    readline.CharPrev,
+					Display: "↑ (k)",
+				},
+				PageUp: promptui.Key{
+					Code:    readline.CharForward,
+					Display: "→ (l)",
+				},
+				PageDown: promptui.Key{
+					Code:    readline.CharBackward,
+					Display: "← (h)",
+				},
+			},
 		}
 
 		_, result, err := prompt.Run()
@@ -102,7 +123,7 @@ var dbdumpsCmd = &cobra.Command{
 			}
 		}
 
-		fmt.Printf("Download starting for: %s\n", libgen.RemoveQuotes(selectedDbdump))
+		fmt.Printf("Download starting for: %s\n", selectedDbdump)
 
 		if err := libgen.DownloadDbdump(selectedDbdump, output); err != nil {
 			fmt.Printf("error downloading dbdump: %v\n", err)
