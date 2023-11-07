@@ -11,7 +11,7 @@ import (
 	iface "github.com/ipfs/boxo/coreiface"
 	"github.com/ipfs/boxo/coreiface/options"
 	ipath "github.com/ipfs/boxo/coreiface/path"
-	ifiles "github.com/ipfs/go-ipfs-files"
+	ifiles "github.com/ipfs/go-libipfs/files"
 	"github.com/ipfs/kubo/config"
 	"github.com/ipfs/kubo/core"
 	"github.com/ipfs/kubo/core/coreapi"
@@ -86,8 +86,6 @@ func DownloadBookIPFS(book *Book, outputPath string) error {
 
 func makeIPFSfile(ipfsNode ifiles.Node, fpath string, bar *pb.ProgressBar) error {
 	switch nd := ipfsNode.(type) {
-	case *ifiles.Symlink:
-		return os.Symlink(nd.Target, fpath)
 	case ifiles.File:
 		f, err := os.Create(fpath)
 		defer f.Close()
@@ -95,29 +93,15 @@ func makeIPFSfile(ipfsNode ifiles.Node, fpath string, bar *pb.ProgressBar) error
 			return err
 		}
 
-		var r io.Reader = nd
-		if bar != nil {
-			r = bar.NewProxyReader(r)
-		}
-		_, err = io.Copy(f, r)
-		if err != nil {
-			return err
-		}
-		return nil
-	case ifiles.Directory:
-		err := os.Mkdir(fpath, 0777)
+                var r io.Reader = nd
+		_, err = io.Copy(f, bar.NewProxyReader(r))
 		if err != nil {
 			return err
 		}
 
-		entries := nd.Entries()
-		for entries.Next() {
-			child := filepath.Join(fpath, entries.Name())
-			if err := makeIPFSfile(entries.Node(), child, bar); err != nil {
-				return err
-			}
-		}
-		return entries.Err()
+		bar.Finish()
+
+		return nil
 	default:
 		return fmt.Errorf("file type %T at %q is not supported", nd, fpath)
 	}
