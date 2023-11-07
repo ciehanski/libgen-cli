@@ -11,7 +11,7 @@ import (
 	iface "github.com/ipfs/boxo/coreiface"
 	"github.com/ipfs/boxo/coreiface/options"
 	ipath "github.com/ipfs/boxo/coreiface/path"
-	ifiles "github.com/ipfs/go-libipfs/files"
+	ifiles "github.com/ipfs/boxo/files"
 	"github.com/ipfs/kubo/config"
 	"github.com/ipfs/kubo/core"
 	"github.com/ipfs/kubo/core/coreapi"
