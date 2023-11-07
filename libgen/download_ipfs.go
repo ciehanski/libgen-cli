@@ -55,7 +55,16 @@ func DownloadBookIPFS(book *Book, outputPath string) error {
 
 	var outPath string
 	if outputPath == "" {
-		outPath = filename
+		wd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		if _, err := os.Stat(fmt.Sprintf("%s/libgen", wd)); err != nil {
+			if err := os.Mkdir(fmt.Sprintf("%s/libgen", wd), 0755); err != nil {
+				return err
+	        	}
+		}
+		outPath = fmt.Sprintf(fmt.Sprintf("%s/libgen/%s", wd, filename))
 	} else {
 		outPath = filepath.Join(outputPath, filename)
 	}
@@ -122,7 +131,6 @@ func setupIPFSclient(ctx context.Context) (iface.CoreAPI, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer os.RemoveAll(ipfsDir)
 
 	// Setup IPFS identity
 	icfg, err := setupIPFSident()
