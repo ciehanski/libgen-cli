@@ -41,6 +41,12 @@ provide you results available for download. See below for a few examples:
 $ libgen search kubernetes
 ```
 
+Force download of query results via available IPFS mirrors:
+
+```bash
+$ libgen search kubernetes -i
+```
+
 Filter the amount of results displayed:  
 (Must be between 1-100).
 
@@ -98,6 +104,12 @@ know the MD5 hash. See below for an example:
 $ libgen download 2F2DBA2A621B693BB95601C16ED680F8
 ```
 
+Force download of query results via available IPFS mirrors:
+
+```bash
+$ libgen download 2F2DBA2A621B693BB95601C16ED680F8 --ipfs-mirrors
+```
+
 You can bulk a list of MD5s by passing it as a command line argument: 
 
 ```bash
@@ -136,6 +148,12 @@ Specify an output path:
 $ libgen download-all -o ~/Desktop/ kubernetes
 ```
 
+Force download of all query results via available IPFS mirrors:
+
+```bash
+$ libgen download-all -o ~/Desktop/ kubernetes -i
+```
+
 ### Dbdumps:
 
 The _dbdumps_ command will list out all of the compiled database dumps of
@@ -158,6 +176,12 @@ of a specific MD5 resource.
 
 ```bash
 $ libgen link 2F2DBA2A621B693BB95601C16ED680F8
+```
+
+Retrieve the available IPFS link of a specific MD5 resource:
+
+```bash
+$ libgen link 2F2DBA2A621B693BB95601C16ED680F8 -i
 ```
 
 ### Status:
