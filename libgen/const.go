@@ -23,6 +23,7 @@ const (
 	libgenPMReg       = `get\.php\?md5=\w{32}&key=\w{16}`
 	libraryLolReg     = `https://download\.library\.lol/main/\d+/[A-Za-z0-9]+/[^"]+`
 	libraryLolIPFSReg = `https:\/\/gateway\.ipfs\.io\/ipfs\/[A-Za-z0-9_-]+(\?[^"]*)?`
+        libraryLolIPFSCFReg = `https:\/\/cloudflare-ipfs\.com\/ipfs\/[A-Za-z0-9_-]+(\?[^"]*)?`
 	dbdumpReg         = `(["])(.*?\.(rar|sql.gz))"`
 	JSONQuery         = "id,title,author,filesize,extension,md5,year,language,pages,publisher,edition,coverurl"
 	TitleMaxLength    = 68
