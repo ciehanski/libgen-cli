@@ -27,7 +27,7 @@ const (
 	JSONQuery         = "id,title,author,filesize,extension,md5,year,language,pages,publisher,edition,coverurl"
 	TitleMaxLength    = 68
 	AuthorMaxLength   = 25
-	HTTPClientTimeout = time.Second * 15
+	HTTPClientTimeout = time.Second * 5 
 	ipfsReg           = `/ipfs/([a-z0-9]+)`
 	//UploadUsername    = "genesis"
 	//UploadPassword    = "upload"
