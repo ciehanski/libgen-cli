@@ -81,6 +81,8 @@ func DownloadBookIPFS(book *Book, outputPath string) error {
 		return err
 	}
 
+        bar.Finish()
+
 	return nil
 }
 
@@ -98,8 +100,6 @@ func makeIPFSfile(ipfsNode ifiles.Node, fpath string, bar *pb.ProgressBar) error
 		if err != nil {
 			return err
 		}
-
-		bar.Finish()
 
 		return nil
 	default:
