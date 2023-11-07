@@ -178,14 +178,14 @@ func getLibraryLolURL(book *Book, useIpfs bool) error {
 
 	downloadURL := []byte{}
 	if useIpfs {
-                // Attempt to find IPFS download URL via gateway.ipfs.io
+		// Attempt to find IPFS download URL via gateway.ipfs.io
 		downloadURL = findMatch(libraryLolIPFSReg, b)
 		if downloadURL == nil {
-                        // Fallback to cloudflare-ipfs.com
-		        downloadURL = findMatch(libraryLolIPFSCFReg, b)
-                        if downloadURL == nil {
-			        return errors.New("no valid download LibraryLol download URL found")
-                        }
+			// Fallback to cloudflare-ipfs.com
+			downloadURL = findMatch(libraryLolIPFSCFReg, b)
+			if downloadURL == nil {
+				return errors.New("no valid download LibraryLol download URL found")
+			}
 		}
 	} else {
 		downloadURL = findMatch(libraryLolReg, b)

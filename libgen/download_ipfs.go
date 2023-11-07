@@ -56,7 +56,7 @@ func DownloadBookIPFS(book *Book, outputPath string) error {
 	if err != nil {
 		return err
 	}
-        defer os.RemoveAll(ipfsDir)
+	defer os.RemoveAll(ipfsDir)
 
 	// Create IPFS client
 	ipfs, err := setupIPFSclient(ctx, ipfsDir)
@@ -92,7 +92,7 @@ func DownloadBookIPFS(book *Book, outputPath string) error {
 		if _, err := os.Stat(fmt.Sprintf("%s/libgen", wd)); err != nil {
 			if err := os.Mkdir(fmt.Sprintf("%s/libgen", wd), 0755); err != nil {
 				return err
-	        	}
+			}
 		}
 		outPath = fmt.Sprintf(fmt.Sprintf("%s/libgen/%s", wd, filename))
 	} else {
@@ -104,14 +104,14 @@ func DownloadBookIPFS(book *Book, outputPath string) error {
 		return err
 	}
 
-        bar.Finish()
+	bar.Finish()
 
 	return nil
 }
 
 func makeIPFSfile(ipfsNode ifiles.Node, fpath string, bar *pb.ProgressBar) error {
 	switch nd := ipfsNode.(type) {
-        case *ifiles.Symlink:
+	case *ifiles.Symlink:
 		return os.Symlink(nd.Target, fpath)
 	case ifiles.File:
 		f, err := os.Create(fpath)
@@ -120,13 +120,13 @@ func makeIPFSfile(ipfsNode ifiles.Node, fpath string, bar *pb.ProgressBar) error
 			return err
 		}
 
-                var r io.Reader = nd
+		var r io.Reader = nd
 		_, err = io.Copy(f, bar.NewProxyReader(r))
 		if err != nil {
 			return err
 		}
 		return nil
-        case ifiles.Directory:
+	case ifiles.Directory:
 		err := os.Mkdir(fpath, 0755)
 		if err != nil {
 			return err
