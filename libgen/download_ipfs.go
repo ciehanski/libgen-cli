@@ -111,6 +111,8 @@ func DownloadBookIPFS(book *Book, outputPath string) error {
 
 func makeIPFSfile(ipfsNode ifiles.Node, fpath string, bar *pb.ProgressBar) error {
 	switch nd := ipfsNode.(type) {
+        case *ifiles.Symlink:
+		return os.Symlink(nd.Target, fpath)
 	case ifiles.File:
 		f, err := os.Create(fpath)
 		defer f.Close()
@@ -123,8 +125,21 @@ func makeIPFSfile(ipfsNode ifiles.Node, fpath string, bar *pb.ProgressBar) error
 		if err != nil {
 			return err
 		}
-
 		return nil
+        case ifiles.Directory:
+		err := os.Mkdir(fpath, 0755)
+		if err != nil {
+			return err
+		}
+
+		entries := nd.Entries()
+		for entries.Next() {
+			child := filepath.Join(fpath, entries.Name())
+			if err := makeIPFSfile(entries.Node(), child, bar); err != nil {
+				return err
+			}
+		}
+		return entries.Err()
 	default:
 		return fmt.Errorf("file type %T at %q is not supported", nd, fpath)
 	}
