@@ -28,8 +28,15 @@ func DownloadBookIPFS(book *Book, outputPath string) error {
 	filename := getBookFilename(book)
 	ctx := context.Context(context.Background())
 
+	// Create temp IPFS dir
+	ipfsDir, err := os.MkdirTemp("", "libgen-cli-ipfs")
+	if err != nil {
+		return err
+	}
+        defer os.RemoveAll(ipfsDir)
+
 	// Create IPFS client
-	ipfs, err := setupIPFSclient(ctx)
+	ipfs, err := setupIPFSclient(ctx, ipfsDir)
 	if err != nil {
 		return err
 	}
@@ -116,19 +123,13 @@ func makeIPFSfile(ipfsNode ifiles.Node, fpath string, bar *pb.ProgressBar) error
 	}
 }
 
-func setupIPFSclient(ctx context.Context) (iface.CoreAPI, error) {
+func setupIPFSclient(ctx context.Context, ipfsDir string) (iface.CoreAPI, error) {
 	defaultPath, err := config.PathRoot()
 	if err != nil {
 		return nil, err
 	}
 
 	if err = setupIPFSplugins(defaultPath); err != nil {
-		return nil, err
-	}
-
-	// Create temp IPFS dir
-	ipfsDir, err := os.MkdirTemp("", "libgen-cli-ipfs")
-	if err != nil {
 		return nil, err
 	}
 
