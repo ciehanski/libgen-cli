@@ -105,6 +105,7 @@ Filter by the file's language:
 $ libgen search kubernetes -l "english"
 ```
 
+
 ### Download:
 
 The _download_ command will allow you to download a specific book if already 
@@ -174,6 +175,7 @@ $ libgen download-all kubernetes -s year -r 100
 $ libgen download-all kubernetes --sort-by lang --sort-asc -r 70
 ```
 
+
 ### Dbdumps:
 
 The _dbdumps_ command will list out all of the compiled database dumps of
@@ -189,6 +191,7 @@ Specify an output path:
 $ libgen dbdumps -o ~/Desktop
 ```
 
+
 ### Link
 
 The _link_ command will retrieve and output the direct download link
@@ -203,6 +206,7 @@ Retrieve the available IPFS link of a specific MD5 resource:
 ```bash
 $ libgen link 2F2DBA2A621B693BB95601C16ED680F8 -i
 ```
+
 
 ### Status:
 
@@ -225,6 +229,7 @@ Specify to only check the status of the search mirrors:
 ```bash
 $ libgen status -m search
 ```
+
 
 ### Version:
 
