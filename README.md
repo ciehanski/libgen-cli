@@ -70,6 +70,16 @@ Specify an output path:
 $ libgen search kubernetes -o ~/Desktop/libgen
 ```
 
+Sort the results by (id, title, author, pub, year, lang, size, ext):
+
+```bash
+$ libgen search kubernetes -s title --sort-asc=false
+```
+
+```bash
+$ libgen search kubernetes --sort-by size
+```
+
 Require that the author field is listed and available for the specific search
 results:
  
@@ -152,6 +162,16 @@ Force download of all query results via available IPFS mirrors:
 
 ```bash
 $ libgen download-all -o ~/Desktop/ kubernetes -i
+```
+
+Download all of the sorted results by (id, title, author, pub, year, lang, size, ext):
+
+```bash
+$ libgen download-all kubernetes -s year -r 100
+```
+
+```bash
+$ libgen download-all kubernetes --sort-by lang --sort-asc -r 70
 ```
 
 ### Dbdumps:
