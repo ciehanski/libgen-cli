@@ -79,6 +79,14 @@ var searchCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("error getting ipfs-mirrors flag: %v\n", err)
 		}
+		sortBy, err := cmd.Flags().GetString("sort-by")
+		if err != nil {
+			fmt.Printf("error getting sort-by flag: %v\n", err)
+		}
+		sortASC, err := cmd.Flags().GetBool("sort-asc")
+		if err != nil {
+			fmt.Printf("error getting sort-asc flag: %v\n", err)
+		}
 
 		// Join args for complete search query in case
 		// it contains spaces
@@ -97,6 +105,8 @@ var searchCmd = &cobra.Command{
 			Year:          year,
 			Publisher:     publisher,
 			Language:      language,
+                        SortBy:        sortBy,
+                        SortASC:       sortASC,
 		})
 		if err != nil {
 			fmt.Printf("error completing search query: %v\n", err)
@@ -236,4 +246,8 @@ func init() {
 		"results by the language provided")
 	searchCmd.Flags().BoolP("ipfs-mirrors", "i", false, "enforces libgen-cli to download "+
 		"results via IPFS mirrors instead of HTTP(S) mirrors.")
+	searchCmd.Flags().StringP("sort-by", "s", "", "sorts the queried results "+
+		"by the specified string. (id, title, author, pub, year, lang, size, ext)")
+	searchCmd.Flags().Bool("sort-asc", true, "sorts the queried results "+
+		"by ascension or descension.")
 }
