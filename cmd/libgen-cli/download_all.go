@@ -96,8 +96,8 @@ var downloadAllCmd = &cobra.Command{
 			Year:          year,
 			Publisher:     publisher,
 			Language:      language,
-                        SortBy:        sortBy,
-                        SortASC:       sortASC,
+			SortBy:        sortBy,
+			SortASC:       sortASC,
 		})
 		if err != nil {
 			fmt.Printf("error completing search query: %v\n", err)

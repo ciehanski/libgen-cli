@@ -62,8 +62,8 @@ type SearchOptions struct {
 	Year          int
 	Publisher     string
 	Language      string
-        SortBy        string
-        SortASC       bool
+	SortBy        string
+	SortASC       bool
 }
 
 // GetDetailsOptions are the optional parameters available for the GetDetails
@@ -77,7 +77,7 @@ type GetDetailsOptions struct {
 	Year          int
 	Publisher     string
 	Language      string
-        SortBy        string
+	SortBy        string
 }
 
 // Search sends a query to the search.php page hosted by gen.lib.rus.ec(or any
@@ -105,33 +105,33 @@ func Search(options *SearchOptions) ([]*Book, error) {
 	q.Set("res", fmt.Sprint(res))
 	q.Set("phrase", "1")
 	q.Set("column", "def")
-        // Handle sorting options
-        switch options.SortBy {
-        case "id":
-                q.Set("sort", "id")
-                setSortASC(q, options.SortASC)
-        case "title":
-                q.Set("sort", "title")
-                setSortASC(q, options.SortASC)
-        case "author":
-                q.Set("sort", "author")
-                setSortASC(q, options.SortASC)
-        case "pub":
-                q.Set("sort", "publisher")
-                setSortASC(q, options.SortASC)
-        case "ext":
-                q.Set("sort", "extension")
-                setSortASC(q, options.SortASC)
-        case "year":
-                q.Set("sort", "year")
-                setSortASC(q, options.SortASC)
-        case "size":
-                q.Set("sort", "filesize")
-                setSortASC(q, options.SortASC)
-        case "lang":
-                q.Set("sort", "language")
-                setSortASC(q, options.SortASC)
-        }
+	// Handle sorting options
+	switch options.SortBy {
+	case "id":
+		q.Set("sort", "id")
+		setSortASC(q, options.SortASC)
+	case "title":
+		q.Set("sort", "title")
+		setSortASC(q, options.SortASC)
+	case "author":
+		q.Set("sort", "author")
+		setSortASC(q, options.SortASC)
+	case "pub":
+		q.Set("sort", "publisher")
+		setSortASC(q, options.SortASC)
+	case "ext":
+		q.Set("sort", "extension")
+		setSortASC(q, options.SortASC)
+	case "year":
+		q.Set("sort", "year")
+		setSortASC(q, options.SortASC)
+	case "size":
+		q.Set("sort", "filesize")
+		setSortASC(q, options.SortASC)
+	case "lang":
+		q.Set("sort", "language")
+		setSortASC(q, options.SortASC)
+	}
 	options.SearchMirror.RawQuery = q.Encode()
 
 	b, err := getBody(options.SearchMirror.String())
@@ -151,7 +151,7 @@ func Search(options *SearchOptions) ([]*Book, error) {
 		Year:          options.Year,
 		Publisher:     options.Publisher,
 		Language:      options.Language,
-                SortBy:        options.SortBy,
+		SortBy:        options.SortBy,
 	})
 	if err != nil {
 		return nil, err
@@ -208,14 +208,14 @@ func GetDetails(options *GetDetailsOptions) ([]*Book, error) {
 				continue
 			}
 		}
-                // Many books don't have the year field set, so
-                // if we are sorting by year, we need to skip any books
-                // with a blank year field.
-                if options.SortBy == "year" {
-                        if book.Year == "" || book.Year == "0" {
-                                continue
-                        }
-                }
+		// Many books don't have the year field set, so
+		// if we are sorting by year, we need to skip any books
+		// with a blank year field.
+		if options.SortBy == "year" {
+			if book.Year == "" || book.Year == "0" {
+				continue
+			}
+		}
 		if options.Publisher != "" {
 			if !strings.Contains(strings.ToLower(book.Publisher), strings.ToLower(options.Publisher)) {
 				continue
@@ -489,9 +489,9 @@ func RemoveQuotes(s string) string {
 }
 
 func setSortASC(q url.Values, sortASC bool) {
-        if sortASC {
-                q.Set("sortmode", "ASC")
-        } else {
-                q.Set("sortmode", "DESC")
-        }
+	if sortASC {
+		q.Set("sortmode", "ASC")
+	} else {
+		q.Set("sortmode", "DESC")
+	}
 }
