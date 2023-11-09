@@ -17,6 +17,7 @@ package libgen
 import (
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -342,41 +343,30 @@ func parseHashes(response []byte, results int) []string {
 // returns a Book object from the slice of bytes.
 func parseResponse(response []byte) (*Book, error) {
 	var book Book
-	var formattedResp []map[string]string
+        var formattedResp []map[string]string
 
-	if err := json.Unmarshal(response, &formattedResp); err != nil {
-		return nil, err
+        if err := json.Unmarshal(response, &formattedResp); err != nil {
+                return nil, err
+        }
+
+	if len(formattedResp) == 0 {
+		return nil, errors.New("empty response or unexpected JSON")
 	}
-	for _, item := range formattedResp {
-		for k, v := range item {
-			switch k {
-			case "id":
-				book.ID = v
-			case "title":
-				book.Title = v
-			case "author":
-				book.Author = v
-			case "filesize":
-				book.Filesize = v
-			case "extension":
-				book.Extension = v
-			case "md5":
-				book.Md5 = v
-			case "year":
-				book.Year = v
-			case "language":
-				book.Language = v
-			case "pages":
-				book.Pages = v
-			case "publisher":
-				book.Publisher = v
-			case "edition":
-				book.Edition = v
-			case "coverurl":
-				book.CoverURL = v
-			}
-		}
-	}
+
+	item := formattedResp[0]
+
+	book.ID = item["id"]
+	book.Title = item["title"]
+	book.Author = item["author"]
+	book.Filesize = item["filesize"]
+	book.Extension = item["extension"]
+	book.Md5 = item["md5"]
+	book.Year = item["year"]
+	book.Language = item["language"]
+	book.Pages = item["pages"]
+	book.Publisher = item["publisher"]
+	book.Edition = item["edition"]
+	book.CoverURL = item["coverurl"]
 
 	return &book, nil
 }
