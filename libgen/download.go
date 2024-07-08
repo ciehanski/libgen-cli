@@ -229,33 +229,17 @@ func makeFile(outputPath, filename string) (*os.File, error) {
 		filename = filename[:256]
 	}
 
-	// if output path was not provided
-	if outputPath == "" {
-		wd, err := os.Getwd()
-		if err != nil {
+	// Check provieded outputPath
+	if stat, err := os.Stat(outputPath); err == nil && stat.IsDir() {
+		out, mkErr = os.Create(fmt.Sprintf("%s/%s", outputPath, filename))
+	} else {
+		if err := os.Mkdir(outputPath, 0755); err != nil {
 			return nil, err
 		}
-		if stat, err := os.Stat(fmt.Sprintf("%s/libgen", wd)); err == nil && stat.IsDir() {
-			out, mkErr = os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
-		} else {
-			if err := os.Mkdir(fmt.Sprintf("%s/libgen", wd), 0755); err != nil {
-				return nil, err
-			}
-			out, mkErr = os.Create(fmt.Sprintf("%s/libgen/%s", wd, filename))
-		}
-		if mkErr != nil {
-			return nil, mkErr
-		}
-	} else {
-		// If output path was provided
-		if stat, err := os.Stat(outputPath); err == nil && stat.IsDir() {
-			out, err = os.Create(fmt.Sprintf("%s/%s", outputPath, filename))
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, errors.New("invalid output path")
-		}
+		out, mkErr = os.Create(fmt.Sprintf("%s/%s", outputPath, filename))
+	}
+	if mkErr != nil {
+		return nil, mkErr
 	}
 
 	return out, nil

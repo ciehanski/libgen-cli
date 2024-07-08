@@ -58,6 +58,16 @@ var downloadCmd = &cobra.Command{
 			fmt.Printf("error getting ipfs-mirrors flag: %v\n", err)
 		}
 
+                // Get configuration
+                conf, err := libgen.ReadConf()
+                if err != nil {
+                        fmt.Printf("error reading libgen configuration: %v\n", err)
+                        os.Exit(1)
+                }
+                if output == "" {
+                        output = conf.GeneralConf.DownloadDir
+                }
+
 		if len(args) == 1 {
 			fmt.Printf("++ Searching for: %s\n", args[0])
 		} else {

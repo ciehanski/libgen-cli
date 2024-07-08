@@ -51,6 +51,16 @@ var dbdumpsCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		// Get configuration
+		conf, err := libgen.ReadConf()
+		if err != nil {
+			fmt.Printf("error reading libgen configuration: %v\n", err)
+			os.Exit(1)
+		}
+		if output == "" {
+			output = conf.GeneralConf.DownloadDir
+		}
+
 		fmt.Println("++ Retrieving all database dumps...")
 
 		mirror := libgen.GetWorkingMirror(libgen.DbdumpsMirrors)
