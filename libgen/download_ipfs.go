@@ -49,6 +49,10 @@ import (
 
 func DownloadBookIPFS(book *Book, outputPath string) error {
 	filename := getBookFilename(book)
+	// Handle long titles
+	if len(filename) >= 256 {
+		filename = filename[:256]
+	}
 	ctx := context.Context(context.Background())
 
 	// Create temp IPFS dir
@@ -63,6 +67,7 @@ func DownloadBookIPFS(book *Book, outputPath string) error {
 	if err != nil {
 		return err
 	}
+
 	// Parse IPFS URL
 	ipfsPath, err := parseIPFSurl(book.DownloadURL)
 	if err != nil {
@@ -83,21 +88,13 @@ func DownloadBookIPFS(book *Book, outputPath string) error {
 	}
 	bar := pb.New64(nodeSize).Start()
 
-	var outPath string
-	if outputPath == "" {
-		wd, err := os.Getwd()
-		if err != nil {
+	// Create output directory
+	if _, err := os.Stat(outputPath); err != nil {
+		if err := os.Mkdir(outputPath, 0755); err != nil {
 			return err
 		}
-		if _, err := os.Stat(fmt.Sprintf("%s/libgen", wd)); err != nil {
-			if err := os.Mkdir(fmt.Sprintf("%s/libgen", wd), 0755); err != nil {
-				return err
-			}
-		}
-		outPath = fmt.Sprintf(fmt.Sprintf("%s/libgen/%s", wd, filename))
-	} else {
-		outPath = filepath.Join(outputPath, filename)
 	}
+	outPath := filepath.Join(outputPath, filename)
 
 	// Copy IPFS node to output file
 	if err := makeIPFSfile(ipfsNode, outPath, bar); err != nil {

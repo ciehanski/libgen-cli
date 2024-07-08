@@ -82,6 +82,16 @@ var downloadAllCmd = &cobra.Command{
 			fmt.Printf("error getting sort-asc flag: %v\n", err)
 		}
 
+                // Get configuration
+                conf, err := libgen.ReadConf()
+                if err != nil {
+                        fmt.Printf("error reading libgen configuration: %v\n", err)
+                        os.Exit(1)
+                }
+                if output == "" {
+                        output = conf.GeneralConf.DownloadDir
+                }
+
 		// Join args for complete search query in case
 		// it contains spaces
 		searchQuery := strings.Join(args, " ")

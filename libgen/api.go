@@ -343,11 +343,11 @@ func parseHashes(response []byte, results int) []string {
 // returns a Book object from the slice of bytes.
 func parseResponse(response []byte) (*Book, error) {
 	var book Book
-        var formattedResp []map[string]string
+	var formattedResp []map[string]string
 
-        if err := json.Unmarshal(response, &formattedResp); err != nil {
-                return nil, err
-        }
+	if err := json.Unmarshal(response, &formattedResp); err != nil {
+		return nil, err
+	}
 
 	if len(formattedResp) == 0 {
 		return nil, errors.New("empty response or unexpected JSON")
