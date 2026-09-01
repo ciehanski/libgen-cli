@@ -51,6 +51,16 @@ type Book struct {
 	PageURL     string
 }
 
+// DisplayPages returns the book's page count for display, falling back to "N/A"
+// when Library Genesis reports no usable value (empty or "0").
+func (b Book) DisplayPages() string {
+	pages := strings.TrimSpace(b.Pages)
+	if pages == "" || pages == "0" {
+		return "N/A"
+	}
+	return pages
+}
+
 // SearchOptions are the optional parameters available for the Search
 // function.
 type SearchOptions struct {

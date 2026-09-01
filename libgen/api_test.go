@@ -1263,3 +1263,21 @@ func TestFormatTitle(t *testing.T) {
 		t.Error("incorrect output title")
 	}
 }
+
+func TestDisplayPages(t *testing.T) {
+	cases := []struct {
+		pages string
+		want  string
+	}{
+		{"320", "320"},
+		{"", "N/A"},
+		{"0", "N/A"},
+		{"   ", "N/A"},
+		{" 512 ", "512"},
+	}
+	for _, c := range cases {
+		if got := (Book{Pages: c.pages}).DisplayPages(); got != c.want {
+			t.Errorf("DisplayPages() with Pages=%q = %q, want %q", c.pages, got, c.want)
+		}
+	}
+}

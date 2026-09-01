@@ -143,6 +143,7 @@ var searchCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			selectChoice += fmt.Sprintf("| %v", color.New(color.FgGreen).Sprintf(humanize.Bytes(uint64(size))))
+			selectChoice += fmt.Sprintf(" | %s pages", color.New(color.FgCyan).Sprintf(b.DisplayPages()))
 			bookSelection = append(bookSelection, selectChoice)
 		}
 
